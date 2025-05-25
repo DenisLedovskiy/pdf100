@@ -5,8 +5,8 @@ final class AppBuilder {
     private var window: UIWindow?
 
     func start() {
-        let vc = ViewController()
-        showController(vc)
+        startMainScene()
+//        goOnboardingScreen()
 //        if UserSet.isNotFirstEnter ?? false {
 //            startMainScene()
 //        } else {
@@ -18,13 +18,16 @@ final class AppBuilder {
     }
 
     func goOnboardingScreen() {
-//        let vc = UINavigationController(rootViewController: OnboardViewController())
+        let vc = PayWallInit.createViewController()
+        showController(vc)
+
+//        let vc = UINavigationController(rootViewController: OnbordingViewController())
 //        showController(vc)
     }
 
     func startMainScene() {
-//        let vc = makeTabBarController()
-//        showController(vc)
+        let vc = makeTabBarController()
+        showController(vc)
     }
 
     private func showController(_ controller: UIViewController) {
@@ -39,13 +42,13 @@ final class AppBuilder {
 }
 
 extension AppBuilder {
-//    private func makeTabBarController() -> UITabBarController {
-//        let tabBarController = PTabBar()
-//        tabBarController.viewControllers = [createVC(MainInit.createViewController()),
-//                                            createVC(SettingsInit.createViewController())
-//        ]
-//        return tabBarController
-//    }
+    private func makeTabBarController() -> UITabBarController {
+        let tabBarController = AppTabBar()
+        tabBarController.viewControllers = [createVC(HomeInit.createViewController()),
+                                            createVC(SettingsInit.createViewController())
+        ]
+        return tabBarController
+    }
 
     func createVC(_ vc: UIViewController) -> UIViewController {
         let navigationController = UINavigationController(rootViewController: vc)

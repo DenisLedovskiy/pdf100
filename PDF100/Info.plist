@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<dict/>
+<dict>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Hellix-Black.ttf</string>
+		<string>Hellix-Bold.ttf</string>
+		<string>Hellix-ExtraBold.ttf</string>
+		<string>Hellix-Light.ttf</string>
+		<string>Hellix-Medium.ttf</string>
+		<string>Hellix-Regular.ttf</string>
+		<string>Hellix-SemiBold.ttf</string>
+		<string>Hellix-Thin.ttf</string>
+	</array>
+</dict>
 </plist>
