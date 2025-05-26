@@ -142,8 +142,9 @@ extension HomeViewController: HomePresenterOutputInterface {
 
 private extension HomeViewController {
 
+    //TODO: do compress
     func selectCompressor() {
-
+        presenter?.needRouteCompress()
     }
 
     func selectConventer() {

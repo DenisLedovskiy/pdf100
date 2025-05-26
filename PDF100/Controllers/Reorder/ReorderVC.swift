@@ -1,4 +1,3 @@
-import PanModal
 import PDFKit
 import UIKit
 
@@ -7,7 +6,7 @@ protocol ReorderVCDelegate: AnyObject {
     func needAddStepFromReorder()
 }
 
-final class ReorderVC: UIViewController {
+final class ReorderVC: PDF100ViewController {
 
     weak var delegate: ReorderVCDelegate?
 
@@ -27,6 +26,30 @@ final class ReorderVC: UIViewController {
 
     //MARK: - UI
 
+    private lazy var backButton: UIButton = {
+        let button = UIButton()
+        button.setImage(.backBtn, for: .normal)
+        button.setImage(.backBtn, for: .highlighted)
+        button.addTarget(self, action: #selector(tapBack), for: .touchUpInside)
+
+        button.layer.shadowOpacity = 1
+        button.layer.shadowRadius = 25
+        button.layer.shadowOffset = CGSize(width: 0, height: -5)
+        button.layer.shadowColor = UIColor.black.withAlphaComponent(0.07).cgColor
+        button.clipsToBounds = false
+        return button
+    }()
+
+    private let titleLabel: UILabel = {
+        let label = UILabel()
+        label.numberOfLines = 1
+        label.textAlignment = .center
+        label.text = trans("Settings das dsad asd as")
+        label.textColor = .textBlack
+        label.font = .hellix(.bold, size: 25)
+        return label
+    }()
+
     private lazy var collectionView: UICollectionView = {
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: makeLayout())
         collectionView.showsVerticalScrollIndicator = false
@@ -38,67 +61,64 @@ final class ReorderVC: UIViewController {
         collectionView.dragDelegate = self
         collectionView.dropDelegate = self
 
+        collectionView.contentInset.bottom = 50
+
         ReorderCell.register(collectionView)
         return collectionView
     }()
 
-    private lazy var backButton: UIButton = {
-        let button = UIButton()
-        button.setImage(.buttonClose, for: .normal)
-        button.setImage(.buttonClose, for: .highlighted)
-        button.addTarget(self, action: #selector(tapBack), for: .touchUpInside)
-        return button
-    }()
-
-    private let bookView: UIImageView = {
+    private let iconView: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = .reorderBook
+        imageView.image = .reorderDragTip
         imageView.contentMode = .scaleToFill
         imageView.clipsToBounds = true
         imageView.backgroundColor = .clear
         return imageView
     }()
 
-    private let titleLabel: PLabel = {
-       let label = PLabel()
-        label.font = .onest(.bold, size: 22)
-        label.textColor = .pBlack
-        label.numberOfLines = 1
-        label.textAlignment = .center
-        label.adjustsFontSizeToFitWidth = true
-        label.setTitle(translate("Reorder.title"))
-        return label
+    private lazy var backView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleToFill
+        imageView.backgroundColor = .clear
+        imageView.image = .settBanner
+        imageView.layer.cornerRadius = 24
+        imageView.clipsToBounds = true
+        return imageView
     }()
 
-    private let backView: UIView = {
+    private let shadowBackView: UIView = {
         let view = UIView()
         view.backgroundColor = .white
-        view.layer.cornerRadius = 12
-
+        view.layer.cornerRadius = 24
+        view.clipsToBounds = true
+        view.layer.shadowRadius = 6
         view.layer.shadowOpacity = 1
-        view.layer.shadowRadius = 12
-        view.layer.shadowOffset = CGSize(width: 0, height: 4)
-        view.layer.shadowColor = UIColor.black.withAlphaComponent(0.04).cgColor
-        view.clipsToBounds = false
+        view.layer.shadowColor = UIColor.shadowBlue.withAlphaComponent(0.8).cgColor
+        view.layer.shadowOffset = CGSize(width: 0, height: 9)
+        view.layer.masksToBounds = false
         return view
     }()
 
-    private let descLabel: PLabel = {
-       let label = PLabel()
-        label.font = .onest(.medium, size: 18)
-        label.textColor = .pBlack
+    private let descLabel: UILabel = {
+       let label = UILabel()
+        label.font = .hellix(.bold, size: 16)
+        label.textColor = .white
         label.numberOfLines = 2
         label.textAlignment = .natural
         label.adjustsFontSizeToFitWidth = true
-        label.setTitle(translate("Reorder.desc"))
+        label.text = trans("Drag pages to rearrange them")
         return label
     }()
 
-    private lazy var deleteButton: PGradientButton = {
-        let button = PGradientButton()
-        button.addTarget(self, action: #selector(tapDelete), for: .touchUpInside)
-        button.setActive(false, title: translate("Delete pages"))
-        return button
+    private lazy var bottomMenu: BottomMenu = {
+        let view = BottomMenu()
+        view.itemCount = 2
+        view.isPreviewMode = false
+        view.setEdit(false)
+        view.didTap = { index in
+            self.selectBottomMenu(index)
+        }
+        return view
     }()
 
     //MARK: -  Lifecicle
@@ -107,7 +127,7 @@ final class ReorderVC: UIViewController {
         super.viewDidLoad()
         congifureConstraits()
 
-        setCollectionData(document)
+        setCollectionData()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -115,20 +135,17 @@ final class ReorderVC: UIViewController {
         guard isWasEdited else {return}
         delegate?.needAddStepFromReorder()
     }
-
-    // MARK: - Init
-    init(document: PdfMainModel) {
-        self.document = document
-        super.init(nibName: nil, bundle: nil)
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
 }
 //MARK: - Private
 private extension ReorderVC {
+
+    func selectBottomMenu(_ index: Int) {
+        if index == 0 {
+            rotatePages()
+        } else {
+            showDeleteAlert()
+        }
+    }
 
     @objc func tapBack() {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
@@ -137,11 +154,46 @@ private extension ReorderVC {
 
     func close() {
         dismiss(animated: true)
+        navigationController?.popViewController(animated: true)
     }
 
-    @objc func tapDelete() {
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        showDeleteAlert()
+    //MARK: - Rotate
+    func rotateAllPagesAndSave(pdfDocument: PDFDocument, pageNumbers: [Int], saveUrl: URL) {
+        for pageNumber in pageNumbers {
+            guard let page = pdfDocument.page(at: pageNumber) else {
+                continue
+            }
+        let currentRotation = page.rotation
+        page.rotation = (currentRotation + 90) % 360
+        }
+
+        if pdfDocument.write(to: saveUrl) {
+            setCollectionData()
+            bottomMenu.setEdit(false)
+            setContent(true)
+        }
+    }
+
+    func rotatePages() {
+        var pagesToRotate = [Int]()
+        snapshot.itemIdentifiers.forEach {
+            if $0.isSelect {
+                if let indexPath = dataSource.indexPath(for: $0) {
+                    pagesToRotate.append(indexPath.row)
+                }
+            }
+        }
+
+        pagesToRotate.sort(by: <)
+
+        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+        let fileName = nameDoc
+        guard let fileURL = documentsDirectory?.appendingPathComponent(fileName) else {return}
+
+        let pdfDocument = PDFDocument(url: fileURL)
+        guard let document = pdfDocument else { return }
+
+        rotateAllPagesAndSave(pdfDocument: document, pageNumbers: pagesToRotate, saveUrl: fileURL)
     }
 
     //MARK: - Delete
@@ -156,11 +208,11 @@ private extension ReorderVC {
             }
         }
         dataSource.apply(snapshot, animatingDifferences: true)
-        checkIsActiveDeleteButton()
+        checkIsBottomMenuActive()
 
         pagesToRemove.sort(by: <)
         let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-        let fileName = "\(document.name).pdf"
+        let fileName = nameDoc
         guard let fileURL = documentsDirectory?.appendingPathComponent(fileName) else {return}
 
         do {
@@ -200,15 +252,15 @@ private extension ReorderVC {
         document.insert(pageToMove, at: newIndex)
 
         let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-        let fileName = "\(self.document.name).pdf"
+        let fileName = nameDoc
         guard let fileURL = documentsDirectory?.appendingPathComponent(fileName) else {return}
         try document.write(to: fileURL)
     }
 
         //MARK: - SetCollection
-    func setCollectionData(_ document: PdfMainModel) {
+    func setCollectionData() {
         let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-        let fileName = "\(document.name).pdf"
+        let fileName = nameDoc
         guard let fileURL = documentsDirectory?.appendingPathComponent(fileName) else {return}
         guard let currentPDF = PDFDocument(url: fileURL) else {return}
 
@@ -241,17 +293,17 @@ private extension ReorderVC {
         let alertStyle = UIAlertController.Style.actionSheet
 
         let alert = UIAlertController(title: nil,
-                                      message: nil,
+                                      message: trans("Do you want to delete pages?"),
                                       preferredStyle: alertStyle)
 
-        alert.addAction(UIAlertAction(title: translate("Delete pages"),
+        alert.addAction(UIAlertAction(title: trans("Delete pages"),
                                       style: .destructive,
                                       handler: { [self] (UIAlertAction) in
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
 
             deletePages()
         }))
-        alert.addAction(UIAlertAction(title: translate("Cancel"),
+        alert.addAction(UIAlertAction(title: trans("Cancel"),
                                       style: .cancel,
                                       handler: nil))
 
@@ -297,7 +349,7 @@ private extension ReorderVC {
             widthDimension: .fractionalWidth(1.0),
             heightDimension: .absolute(size.height))
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, repeatingSubitem: item, count: 2)
-        group.interItemSpacing = .fixed(20)
+        group.interItemSpacing = .fixed(8)
 
         let section = NSCollectionLayoutSection(group: group)
         section.interGroupSpacing = 14
@@ -314,6 +366,7 @@ private extension ReorderVC {
     }
 
     private func applySnapshot(animatingDifferences: Bool = true) {
+        snapshot = Snapshot()
         snapshot.appendSections(sections)
         sections.forEach { section in
             snapshot.appendItems(section.items, toSection: section)
@@ -343,7 +396,7 @@ extension ReorderVC: UICollectionViewDelegate {
             snapshot.insertItems([mutableItem], beforeItem: snapshot.itemIdentifiers[indexPath.row])
         }
 
-        checkIsActiveDeleteButton()
+        checkIsBottomMenuActive()
 
         dataSource.apply(snapshot, animatingDifferences: true) {
             collectionView.reloadData()
@@ -420,81 +473,80 @@ extension ReorderVC: UICollectionViewDragDelegate {
 private extension ReorderVC {
 
     func congifureConstraits() {
-        view.backgroundColor = .pViewBack
 
+        view.addSubview(backButton)
         view.addSubview(titleLabel)
+        view.addSubview(shadowBackView)
         view.addSubview(backView)
-        backView.addSubview(bookView)
+        backView.addSubview(iconView)
         backView.addSubview(descLabel)
         view.addSubview(backButton)
-        view.addSubview(deleteButton)
         view.addSubview(collectionView)
+        view.addSubview(bottomMenu)
 
         backButton.snp.makeConstraints({
-            $0.trailing.equalToSuperview().inset(22)
-            $0.top.equalToSuperview().offset(22)
-            $0.size.equalTo(34)
+            $0.size.equalTo(38)
+            $0.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(24)
+            $0.leading.equalToSuperview().offset(15)
         })
 
         titleLabel.snp.makeConstraints({
-            $0.top.equalToSuperview().offset(33)
-            $0.leading.trailing.equalToSuperview().inset(60)
+            $0.centerY.equalTo(backButton.snp.centerY)
+            $0.leading.equalToSuperview().offset(60)
+            $0.trailing.equalToSuperview().inset(60)
+        })
+
+        shadowBackView.snp.makeConstraints({
+            $0.top.equalTo(titleLabel.snp.bottom).offset(19)
+            $0.leading.trailing.equalToSuperview().inset(20)
+            $0.height.equalTo(46)
         })
 
         backView.snp.makeConstraints({
             $0.top.equalTo(titleLabel.snp.bottom).offset(19)
-            $0.leading.trailing.equalToSuperview().inset(22)
-            $0.height.equalTo(75)
+            $0.leading.trailing.equalToSuperview().inset(20)
+            $0.height.equalTo(46)
         })
 
-        bookView.snp.makeConstraints({
-            $0.size.equalTo(33)
+        iconView.snp.makeConstraints({
+            $0.size.equalTo(28)
             $0.centerY.equalToSuperview()
-            $0.leading.equalToSuperview().offset(15)
+            $0.leading.equalToSuperview().offset(30)
         })
 
         descLabel.snp.makeConstraints({
             $0.centerY.equalToSuperview()
-            $0.leading.equalTo(bookView.snp.trailing).offset(12)
+            $0.leading.equalTo(iconView.snp.trailing).offset(6)
             $0.trailing.equalToSuperview().inset(16)
         })
 
-        deleteButton.snp.makeConstraints({
-            $0.height.equalTo(deleteButton.height)
-            $0.leading.trailing.equalToSuperview().inset(22)
-            $0.bottom.equalToSuperview().offset(-40)
-        })
-
         collectionView.snp.makeConstraints({
-            $0.top.equalTo(descLabel.snp.bottom).offset(19)
+            $0.top.equalTo(backView.snp.bottom).offset(19)
             $0.leading.trailing.equalToSuperview()
-            $0.bottom.equalTo(deleteButton.snp.top).offset(-8)
+            $0.bottom.equalToSuperview()
+        })
+
+        bottomMenu.snp.makeConstraints({
+            $0.leading.trailing.equalToSuperview().inset(20)
+            $0.height.equalTo(78)
+            $0.bottom.equalToSuperview().offset(-44)
         })
     }
 
-    func checkIsActiveDeleteButton() {
+    func checkIsBottomMenuActive() {
         let isActive = snapshot.itemIdentifiers.contains { $0.isSelect == true }
-        deleteButton.setActive(isActive, title: translate("Delete pages"))
-    }
-}
-
-// MARK: - PanModalPresentable
-extension ReorderVC: PanModalPresentable {
-    var panScrollable: UIScrollView? {
-        nil
+        bottomMenu.setEdit(isActive)
+        setContent(!isActive)
     }
 
-    var shortFormHeight: PanModalHeight {
-        .maxHeight
+    func setContent(_ isDrag: Bool) {
+        iconView.image = isDrag ? .reorderDragTip : .reorderDeleteTip
+        descLabel.text = isDrag ? trans("Drag pages to rearrange them") : trans("You can delete or rotate files using the toolbar")
+        backView.snp.updateConstraints({
+            $0.height.equalTo(isDrag ? 46 : 56)
+        })
+        shadowBackView.snp.updateConstraints({
+            $0.height.equalTo(isDrag ? 46 : 56)
+        })
     }
-
-    var panModalBackgroundColor: UIColor {
-        .black.withAlphaComponent(0.2)
-    }
-
-    var cornerRadius: CGFloat {
-        12.0
-    }
-
-    var showDragIndicator: Bool { false }
 }

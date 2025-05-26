@@ -9,6 +9,7 @@ protocol HomePresenterInterface {
     func needDeleteDoc(_ index: Int)
     func needShowConverMenu(sheet: UIViewController)
     func needShowDocument()
+    func needRouteCompress()
 }
 
 final class HomePresenter: NSObject {
@@ -99,6 +100,10 @@ private extension HomePresenter {
 // MARK: - HomePresenterInterface
 
 extension HomePresenter: HomePresenterInterface {
+    func needRouteCompress() {
+        router.showCompress()
+    }
+    
     func needShowDocument() {
         router.showDocument()
     }

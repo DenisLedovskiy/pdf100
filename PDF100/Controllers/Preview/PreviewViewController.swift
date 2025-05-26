@@ -167,10 +167,12 @@ final class PreviewViewController: PDF100ViewController {
         super.viewWillAppear(animated)
         hideNavBar(true)
         hideTabBar(true)
+        updatePDF()
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        setPDF()
         customInit()
         presenter?.viewDidLoad(withView: self)
 
@@ -232,7 +234,8 @@ private extension PreviewViewController {
             pdfView.snp.updateConstraints({
                 $0.top.equalTo(pageLabel.snp.bottom).offset(isSearchMode ? 70 : 30)
             })
-        case 1: return
+        case 1:
+            presenter?.selectReorder()
         case 2:
             let previewController = QLPreviewController()
             previewController.dataSource = self
@@ -313,7 +316,7 @@ private extension PreviewViewController {
                     if let selection = page.selection(for: nsRange) {
                         foundSelections.append(selection) // Store the selection
                         let highlight = PDFAnnotation(bounds: selection.bounds(for: page), forType: .highlight, withProperties: nil)
-                        highlight.color = UIColor.blue.withAlphaComponent(0.5)
+                        highlight.color = UIColor.buttonGradientStart.withAlphaComponent(0.3)
                         page.addAnnotation(highlight)
                     }
 
@@ -423,7 +426,10 @@ private extension PreviewViewController {
                 try? FileManager.default.copyItem(at: pdfURL, to: destinationPath)
             }
         }
+        updatePDF()
+    }
 
+    func updatePDF() {
         let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
         let fileName = tempName
         if let fileURL = documentsDirectory?.appendingPathComponent(fileName) {
@@ -431,15 +437,12 @@ private extension PreviewViewController {
             let newPdfDoc = PDFDocument(url: fileURL)
             pdfView.document = newPdfDoc
             allPages = newPdfDoc?.pageCount ?? 10
+
+            pageLabel.text = "\(trans("Page")) \(currentPage) \(trans("of")) \(allPages)"
         }
     }
 
     func customInit() {
-
-        setPDF()
-
-        pageLabel.text = "\(trans("Page")) \(currentPage) \(trans("of")) \(allPages)"
-
         view.addSubview(backButton)
         view.addSubview(saveButton)
         view.addSubview(titleLabel)

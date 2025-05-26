@@ -43,7 +43,7 @@ final class ReorderCell: PDF100CollectionCell {
     override class var size: CGSize {
         var width: CGFloat = 0
         if phoneSize == .big {
-            width = (deviceWidth - 56)/2
+            width = (deviceWidth - 54)/2
         } else {
             width = (deviceWidth - 42)/2
         }
@@ -60,10 +60,10 @@ final class ReorderCell: PDF100CollectionCell {
         backgroundColor = .clear
 
         // MARK: - Add Subviews
+        addSubview(borderView)
         addSubview(backView)
         addSubview(cellImageView)
         addSubview(dotView)
-        addSubview(borderView)
 
         // MARK: - Add Constraints
         setupConstraints()

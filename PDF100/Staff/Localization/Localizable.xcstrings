@@ -45,6 +45,17 @@
         }
       }
     },
+    "By increasing the quality, \nyou increase the file size" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By increasing the quality, \nyou increase the file size"
+          }
+        }
+      }
+    },
     "by users" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -166,6 +177,17 @@
         }
       }
     },
+    "Delete pages" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete pages"
+          }
+        }
+      }
+    },
     "describe" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -199,6 +221,17 @@
         }
       }
     },
+    "Do you want to delete pages?" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Do you want to delete pages?"
+          }
+        }
+      }
+    },
     "Do you want to exit without saving  your changes?" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -217,6 +250,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Documents"
+          }
+        }
+      }
+    },
+    "Drag pages to rearrange them" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drag pages to rearrange them"
           }
         }
       }
@@ -529,6 +573,17 @@
         }
       }
     },
+    "Quality" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quality"
+          }
+        }
+      }
+    },
     "Read PDF" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -580,6 +635,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Restore"
+          }
+        }
+      }
+    },
+    "rotate" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "rotate"
           }
         }
       }
@@ -844,6 +910,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Write a feedback"
+          }
+        }
+      }
+    },
+    "You can delete or rotate files using the toolbar" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can delete or rotate files using the toolbar"
           }
         }
       }

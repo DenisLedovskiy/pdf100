@@ -7,6 +7,7 @@ protocol PreviewPresenterInterface {
     func needDismiss()
     func needAddImagesToPdf(document: String, pdfDoc: PDFDocument, images: [UIImage])
     func needAddPdfToPdf(document: String, pdfDoc1: PDFDocument, pdfDoc2: PDFDocument)
+    func selectReorder()
 }
 
 final class PreviewPresenter: NSObject {
@@ -64,6 +65,10 @@ private extension PreviewPresenter {
 // MARK: - PreviewPresenterInterface
 
 extension PreviewPresenter: PreviewPresenterInterface {
+    func selectReorder() {
+        router.routeReorder()
+    }
+    
     func needAddImagesToPdf(document: String, pdfDoc: PDFDocument, images: [UIImage]) {
         addImagesToPDf(document: document, pdfDoc: pdfDoc, images: images)
     }

@@ -107,10 +107,12 @@ final class NextPrevView: UIView {
 private extension NextPrevView {
 
     @objc func tapNext() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
         didTapNext?()
     }
 
     @objc func tapPrev() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
         didTapPrev?()
     }
 

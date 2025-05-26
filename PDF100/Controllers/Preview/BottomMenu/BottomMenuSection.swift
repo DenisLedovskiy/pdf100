@@ -34,5 +34,20 @@ extension BottomMenuSection {
         ]
     }
 
-    
+    static func makeEditSection() -> [BottomMenuSection] {
+        return [
+            .init(title: "",
+                  items: [PDF100CellModel(title: trans("rotate"), icon: .rotateOff, isSelect: false),
+                          PDF100CellModel(title: trans("Delete").lowercased(), icon: .deleteOff, isSelect: false)])
+        ]
+    }
+
+    static func makeEditOnSection() -> [BottomMenuSection] {
+        return [
+            .init(title: "",
+                  items: [PDF100CellModel(title: trans("rotate"), icon: .rotateOn, isSelect: true),
+                          PDF100CellModel(title: trans("Delete").lowercased(), icon: .deleteOn, isSelect: true)])
+        ]
+    }
+
 }

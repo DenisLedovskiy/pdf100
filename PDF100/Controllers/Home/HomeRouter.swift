@@ -5,6 +5,7 @@ protocol HomeRouterInterface: AnyObject {
     func showShare(_ url: URL)
     func showConvertMenu(sheet: UIViewController)
     func showDocument()
+    func showCompress()
 }
 
 class HomeRouter: NSObject {
@@ -14,6 +15,12 @@ class HomeRouter: NSObject {
 // MARK: - HomeRouterInterface
 
 extension HomeRouter: HomeRouterInterface {
+    func showCompress() {
+        guard let viewController = controller else { return }
+        let controller = Compress()
+        viewController.navigationController?.pushViewController(controller, animated: true)
+    }
+    
     func showDocument() {
         guard let viewController = controller else { return }
         let controller = PreviewInit.createViewController()

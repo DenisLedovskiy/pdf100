@@ -62,6 +62,16 @@ class BottomMenu: UIView {
         sections = BottomMenuSection.makePreviewSection()
         applySnapshot(animatingDifferences: false)
     }
+
+    func setEdit(_ isActive: Bool) {
+        currentindex = 100
+        if isActive {
+            sections = BottomMenuSection.makeEditOnSection()
+        } else {
+            sections = BottomMenuSection.makeEditSection()
+        }
+        applySnapshot(animatingDifferences: false)
+    }
 }
 
 //MARK: - Collection
@@ -138,6 +148,7 @@ private extension BottomMenu {
 extension BottomMenu: UICollectionViewDelegate {
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
         didTap?(indexPath.row)
 
         if isPreviewMode {
