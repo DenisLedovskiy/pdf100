@@ -6,6 +6,7 @@ protocol HomeRouterInterface: AnyObject {
     func showConvertMenu(sheet: UIViewController)
     func showDocument(docName: String)
     func showCompress(docName: String)
+    func showPayWall()
 }
 
 class HomeRouter: NSObject {
@@ -15,6 +16,13 @@ class HomeRouter: NSObject {
 // MARK: - HomeRouterInterface
 
 extension HomeRouter: HomeRouterInterface {
+    func showPayWall() {
+        guard let viewController = controller else { return }
+        let vc = PayWallInit.createViewController()
+        vc.modalPresentationStyle = .overFullScreen
+        viewController.present(vc, animated: true)
+    }
+    
     func showCompress(docName: String) {
         guard let viewController = controller else { return }
         let controller = Compress(docName: docName)

@@ -11,6 +11,7 @@ protocol HomePresenterInterface {
     func needShowDocument(index: Int)
     func needShowDocumentByName(docName: String)
     func needRouteCompress(docName: String)
+    func needShowPayWall()
 }
 
 final class HomePresenter: NSObject {
@@ -106,6 +107,10 @@ private extension HomePresenter {
 // MARK: - HomePresenterInterface
 
 extension HomePresenter: HomePresenterInterface {
+    func needShowPayWall() {
+        router.showPayWall()
+    }
+
     func needShowDocumentByName(docName: String) {
         router.showDocument(docName:docName)
     }

@@ -183,6 +183,10 @@ private extension HomeViewController {
 
     func selectCompressor() {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        guard MakeDollarService.shared.isPremium else {
+            presenter?.needShowPayWall()
+            return
+        }
         client.checkInternetConnection { connected in
             if connected {
                 self.isCompressMode = true
@@ -357,6 +361,10 @@ private extension HomeViewController {
                                       style: .default,
                                       handler:{ [self] (UIAlertAction)in
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            guard MakeDollarService.shared.isPremium else {
+                presenter?.needShowPayWall()
+                return
+            }
             presenter?.needShare(selectIndexDoc)
         }))
         alert.addAction(UIAlertAction(title: trans("Delete"),
