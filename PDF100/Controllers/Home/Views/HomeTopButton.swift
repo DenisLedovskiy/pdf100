@@ -49,7 +49,7 @@ final class HomeTopButton: UIView {
         layer.cornerRadius = 20
 
         layer.shadowOpacity = 1
-        layer.shadowRadius = 25
+        layer.shadowRadius = 10
         layer.shadowOffset = CGSize(width: 0, height: -5)
         layer.shadowColor = UIColor.black.withAlphaComponent(0.07).cgColor
         clipsToBounds = false
@@ -76,13 +76,13 @@ private extension HomeTopButton {
     func setupConstraits() {
         viewIcon.snp.makeConstraints({
             $0.centerX.equalToSuperview()
-            $0.top.equalToSuperview()
+            $0.top.equalToSuperview().offset(6)
             $0.size.equalTo(82)
         })
 
         titleLabel.snp.makeConstraints({
             $0.leading.trailing.equalToSuperview().inset(16)
-            $0.top.equalToSuperview().offset(76)
+            $0.top.equalToSuperview().offset(82)
         })
 
         viewButton.snp.makeConstraints({

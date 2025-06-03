@@ -4,27 +4,27 @@ import SafariServices
 
 final class OnbordingViewController: PDF100ViewController {
 
-//    private let appHubManager = MoneyManager.shared
+    private let appHubManager = MakeDollarService.shared
 
     private var screenIndex = 0
     private lazy var bottomButtonsHeight: Double = 20
 
     private var imageTopInset: Double = switch phoneSize {
-    case .small: 130
-    case .medium: 180
-    case .big: 210
+    case .small: 135
+    case .medium: 195
+    case .big: 225
     }
 
     private var imageHeight: Double = switch phoneSize {
-    case .small: (deviceWidth-20) * 1.18 //1.18575064
-    case .medium: 466
-    case .big: deviceWidth * 1.18
+    case .small: (deviceWidth-20) * 1.13 //1.18066
+    case .medium: 446
+    case .big: deviceWidth * 1.1348
     }
 
     private var titleTopInset: Double = switch phoneSize {
-    case .small: isEnLocal ? 40 : 20
+    case .small: 20
     case .medium: isEnLocal ? 80 : 40
-    case .big: isEnLocal ? 100 : 60
+    case .big: isEnLocal ? 80 : 60
     }
 
     private var bottomButtonsInset: Double = switch phoneSize {
@@ -139,6 +139,7 @@ final class OnbordingViewController: PDF100ViewController {
         collectionView.contentInset.bottom = 2
         OnboardCell.register(collectionView)
         collectionView.isHidden = true
+        collectionView.layer.masksToBounds = false
         return collectionView
     }()
     
@@ -149,7 +150,7 @@ final class OnbordingViewController: PDF100ViewController {
         hideTabBar(true)
         hideNavBar(true)
         applySnapshot()
-//        appHubManager.delegate = self
+        appHubManager.delegate = self
     }
 }
 
@@ -169,6 +170,8 @@ private extension OnbordingViewController {
         if screenIndex == 3 {
             bigImageView.isHidden = true
             collectionView.isHidden = false
+            sections = OnboardSection.makeFirstSection()
+            applySnapshot()
         }
 
         if screenIndex == 4 {
@@ -176,7 +179,7 @@ private extension OnbordingViewController {
             applySnapshot()
         }
 
-        if screenIndex < 4 {
+        if screenIndex < 5 {
             changeUI(screenIndex)
         } else {
             navigateToPayWall()
@@ -196,7 +199,7 @@ private extension OnbordingViewController {
     @objc func selectRestore() {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
         startSpinner()
-//        appHubManager.restore()
+        appHubManager.restore()
     }
 
     @objc func selectTerm() {
@@ -215,14 +218,31 @@ private extension OnbordingViewController {
 
     func changeUI(_ index: Int) {
         setTitle(index)
-        switch index {
-        case 0: subLabel.text = trans("Facilitates fast and precise PDF file adjustments")
-        case 1: subLabel.text = trans("Gives you the tools to swiftly and precisely adjust PDFs")
-        case 2: subLabel.text = trans("We're committed to delivering the best experience for you")
-        case 3: subLabel.text = trans("Take a moment to indicate which one you would prefer")
-        case 4: subLabel.text = trans("You may select multiple options from the following list")
-        default: return
+//        switch index {
+//        case 0: subLabel.text = trans("Facilitates fast and precise PDF file adjustments")
+//        case 1: subLabel.text = trans("Gives you the tools to swiftly and precisely adjust PDFs")
+//        case 2: subLabel.text = trans("We're committed to delivering the best experience for you")
+//        case 3: subLabel.text = trans("Take a moment to indicate which one you would prefer")
+//        case 4: subLabel.text = trans("You may select multiple options from the following list")
+//        default: return
+//        }
+
+        let text = switch index {
+        case 0: trans("Facilitates fast and precise PDF file adjustments")
+        case 1: trans("Gives you the tools to swiftly and precisely adjust PDFs")
+        case 2: trans("We're committed to delivering the best experience for you")
+        case 3: trans("Take a moment to indicate which one you would prefer")
+        case 4: trans("You may select multiple options from the following list")
+        default: ""
         }
+
+        let attributedText = NSMutableAttributedString(string: text)
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineSpacing = 6
+        attributedText.addAttribute(.paragraphStyle, value: paragraphStyle, range: NSRange(location: 0, length: attributedText.length))
+        subLabel.attributedText = attributedText
+        subLabel.textAlignment = .center
+
         if screenIndex < 3 {
             bigImageView.image = UIImage(named: "onboradImg.\(index)")
         }
@@ -241,13 +261,13 @@ private extension OnbordingViewController {
     }
 
     func navigateToPayWall() {
-//        let controller = InAppInit.createViewController()
-//        navigationController?.pushViewController(controller, animated: false)
+        let controller = PayWallInit.createViewController()
+        navigationController?.pushViewController(controller, animated: false)
     }
 
     func getAppHudInfoAgain() {
         Task {
-//            MoneyManager.shared.getProducts()
+            MakeDollarService.shared.getProducts()
         }
     }
 }
@@ -322,8 +342,12 @@ private extension OnbordingViewController {
         })
 
         subLabel.snp.makeConstraints({
-            $0.top.equalTo(titleLabel.snp.bottom).offset(isSmallPhone ? 2 : 8)
-            $0.leading.trailing.equalToSuperview().inset(isSmallPhone ? 20 : 40)
+            $0.top.equalTo(titleLabel.snp.bottom).offset(isSmallPhone ? 6 : 8)
+            if isEnLocal {
+                $0.leading.trailing.equalToSuperview().inset(isSmallPhone ? 40 : 60)
+            } else {
+                $0.leading.trailing.equalToSuperview().inset(isSmallPhone ? 20 : 40)
+            }
         })
 
         bigImageView.snp.makeConstraints({
@@ -333,7 +357,7 @@ private extension OnbordingViewController {
         })
 
         collectionView.snp.makeConstraints({
-            $0.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(imageTopInset)
+            $0.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(imageTopInset + 20)
             $0.leading.trailing.equalToSuperview()
             $0.height.equalTo(imageHeight)
         })
@@ -373,41 +397,84 @@ private extension OnbordingViewController {
                       NSAttributedString.Key.foregroundColor : UIColor.textBlack]
         let style2 = [NSAttributedString.Key.font : UIFont.hellix(.bold, size: 30),
                       NSAttributedString.Key.foregroundColor : UIColor.textRed]
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineSpacing = 6
 
         switch index {
         case 0:
             let attrStr1 = NSMutableAttributedString(string: trans("Scan") + ", ", attributes: style1)
-            let attrStr2 = NSMutableAttributedString(string: trans("edit") + " ", attributes: style2)
+//            var stirng2 = trans("edit") + " "
+//            if isEnLocal {
+               let stirng2 = trans("edit") + "\n"
+//            }
+            let attrStr2 = NSMutableAttributedString(string: stirng2, attributes: style2)
             let attrStr3 = NSMutableAttributedString(string: trans("and share"), attributes: style1)
             attrStr1.append(attrStr2)
             attrStr1.append(attrStr3)
+
+            attrStr1.addAttribute(.paragraphStyle,
+                                        value: paragraphStyle,
+                                        range: NSRange(location: 0, length: attrStr1.length))
             titleLabel.attributedText = attrStr1
+            titleLabel.textAlignment = .center
         case 1:
-            let attrStr1 = NSMutableAttributedString(string: trans("Compress and") + " ", attributes: style1)
+//            var stirng = trans("Compress and") + " "
+//            if isEnLocal {
+                let stirng = trans("Compress and") + "\n"
+//            }
+            let attrStr1 = NSMutableAttributedString(string: stirng, attributes: style1)
             let attrStr2 = NSMutableAttributedString(string: trans("Convert") + " ", attributes: style2)
             let attrStr3 = NSMutableAttributedString(string: "PDF", attributes: style1)
             attrStr1.append(attrStr2)
             attrStr1.append(attrStr3)
+            attrStr1.addAttribute(.paragraphStyle,
+                                        value: paragraphStyle,
+                                        range: NSRange(location: 0, length: attrStr1.length))
             titleLabel.attributedText = attrStr1
+            titleLabel.textAlignment = .center
         case 2:
             let attrStr1 = NSMutableAttributedString(string: trans("Preferred") + " ", attributes: style2)
-            let attrStr2 = NSMutableAttributedString(string: trans("by users"), attributes: style1)
+//            var stirng = trans("by users")
+//            if isEnLocal {
+            let   stirng = trans("by\n users")
+//            }
+            let attrStr2 = NSMutableAttributedString(string: stirng, attributes: style1)
             attrStr1.append(attrStr2)
+            attrStr1.addAttribute(.paragraphStyle,
+                                        value: paragraphStyle,
+                                        range: NSRange(location: 0, length: attrStr1.length))
             titleLabel.attributedText = attrStr1
+            titleLabel.textAlignment = .center
         case 3:
-            let attrStr1 = NSMutableAttributedString(string: trans("How would you") + " ", attributes: style1)
+//            var stirng = trans("How would you") + " "
+//            if isEnLocal {
+            let  stirng = trans("How would you") + "\n"
+//            }
+            let attrStr1 = NSMutableAttributedString(string: stirng, attributes: style1)
             let attrStr2 = NSMutableAttributedString(string: trans("describe") + " ", attributes: style2)
             let attrStr3 = NSMutableAttributedString(string: trans("yourself") + "?", attributes: style1)
             attrStr1.append(attrStr2)
             attrStr1.append(attrStr3)
+            attrStr1.addAttribute(.paragraphStyle,
+                                        value: paragraphStyle,
+                                        range: NSRange(location: 0, length: attrStr1.length))
             titleLabel.attributedText = attrStr1
+            titleLabel.textAlignment = .center
         case 4:
-            let attrStr1 = NSMutableAttributedString(string: trans("Which feature you’ll ") + " ", attributes: style1)
+//            var stirng = trans("Which feature you’ll ") + " "
+//            if isEnLocal {
+            let  stirng = trans("Which feature you’ll ") + "\n"
+//            }
+            let attrStr1 = NSMutableAttributedString(string: stirng, attributes: style1)
             let attrStr2 = NSMutableAttributedString(string: trans("use") + " ", attributes: style2)
             let attrStr3 = NSMutableAttributedString(string: trans("regularly") + "?", attributes: style1)
             attrStr1.append(attrStr2)
             attrStr1.append(attrStr3)
+            attrStr1.addAttribute(.paragraphStyle,
+                                        value: paragraphStyle,
+                                        range: NSRange(location: 0, length: attrStr1.length))
             titleLabel.attributedText = attrStr1
+            titleLabel.textAlignment = .center
         default: return
         }
     }
@@ -415,15 +482,17 @@ private extension OnbordingViewController {
 
 // MARK: - AppHubManagerDelegate
 
-//extension OnbordingViewController: MoneyManagerDelegateDelegate {
-//    func purchasesWasEnded(success: Bool?, messageError: String) {
-//        endSpinner()
-//        guard let success = success else {
-//            return
-//        }
-//
-//        if !success {
-//            showErrorAlert(title: perevod("Sorry"), message: messageError)
-//        }
-//    }
-//}
+extension OnbordingViewController: AppHudManagerDelegate {
+    func finishLoadPaywall() { }
+    
+    func purchasesWasEnded(success: Bool?, messageError: String) {
+        endSpinner()
+        guard let success = success else {
+            return
+        }
+
+        if !success {
+            showErrorAlert(title: trans("Sorry"), message: messageError)
+        }
+    }
+}

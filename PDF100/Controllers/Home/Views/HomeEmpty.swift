@@ -28,11 +28,17 @@ final class HomeEmpty: UIView {
     private let subLabel: UILabel = {
         let label = UILabel()
         label.numberOfLines = 3
-        label.textAlignment = .center
         label.adjustsFontSizeToFitWidth = true
         label.textColor = .subtitle
         label.font = .hellix(.semibold, size: 16)
-        label.text = trans("Scan or add your document by taping the button")
+        let text = trans("Scan or add your document by taping the button")
+
+        let attributedText = NSMutableAttributedString(string: text)
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineSpacing = 6
+        attributedText.addAttribute(.paragraphStyle, value: paragraphStyle, range: NSRange(location: 0, length: attributedText.length))
+        label.attributedText = attributedText
+        label.textAlignment = .center
         return label
     }()
 
@@ -63,17 +69,17 @@ private extension HomeEmpty {
         viewIcon.snp.makeConstraints({
             $0.centerX.equalToSuperview()
             $0.top.equalToSuperview()
-            $0.width.equalTo(280)
-            $0.height.equalTo(250)
+            $0.width.equalTo(isSmallPhone ? 220 : 280)
+            $0.height.equalTo(isSmallPhone ? 196 : 250)
         })
 
         titleLabel.snp.makeConstraints({
             $0.leading.trailing.equalToSuperview().inset(16)
-            $0.top.equalToSuperview().offset(220)
+            $0.top.equalToSuperview().offset(isSmallPhone ? 190 : 220)
         })
 
         subLabel.snp.makeConstraints({
-            $0.top.equalTo(titleLabel.snp.bottom).offset(8)
+            $0.top.equalTo(titleLabel.snp.bottom).offset(14)
             $0.leading.trailing.equalToSuperview().inset(16)
         })
     }

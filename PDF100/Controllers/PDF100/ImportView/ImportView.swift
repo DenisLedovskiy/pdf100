@@ -33,6 +33,7 @@ class ImportView: UIView {
         collectionView.delegate = self
         collectionView.isScrollEnabled = false
         collectionView.contentInset.bottom = 2
+        collectionView.layer.masksToBounds = false
         ImportCell.register(collectionView)
         return collectionView
     }()
@@ -52,7 +53,7 @@ class ImportView: UIView {
         layer.cornerRadius = 30
 
         layer.shadowOpacity = 1
-        layer.shadowRadius = 25
+        layer.shadowRadius = 10
         layer.shadowOffset = CGSize(width: 0, height: -5)
         layer.shadowColor = UIColor.black.withAlphaComponent(0.07).cgColor
         clipsToBounds = false
@@ -166,12 +167,12 @@ private extension ImportView {
     func setupConstraits() {
         titleLabel.snp.makeConstraints({
             $0.leading.equalToSuperview().offset(14)
-            $0.top.equalToSuperview().offset(24)
+            $0.top.equalToSuperview().offset(30)
         })
 
         collectionView.snp.makeConstraints({
             $0.leading.trailing.equalToSuperview()
-            $0.top.equalTo(titleLabel.snp.bottom).offset(10)
+            $0.top.equalTo(titleLabel.snp.bottom).offset(20)
             $0.bottom.equalToSuperview()
         })
     }

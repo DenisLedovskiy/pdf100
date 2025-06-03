@@ -20,9 +20,10 @@ final class BottomMuneCell: PDF100CollectionCell {
     private lazy var cellTitle: UILabel = {
         let label = UILabel()
         label.textAlignment = .center
-        label.numberOfLines = 1
+        label.numberOfLines = 2
         label.font = .hellix(.semibold, size: 14)
         label.textColor = .subtitle
+        label.adjustsFontSizeToFitWidth = true
         return label
     }()
 
@@ -53,7 +54,7 @@ final class BottomMuneCell: PDF100CollectionCell {
     // MARK: - methods
 
     func configureCellData(_ data: PDF100CellModel) {
-        cellTitle.text = data.title
+        cellTitle.text = data.title.lowercased()
         cellIcon.image = data.icon
         if data.isSelect {
             cellTitle.textColor = gradientColor
@@ -72,7 +73,13 @@ extension BottomMuneCell {
         cellIcon.snp.makeConstraints({
             $0.centerX.equalToSuperview()
             $0.top.equalToSuperview().offset(3)
-            $0.size.equalTo(iconSize)
+            if isSmallPhone {
+                $0.height.equalTo(iconSize)
+                $0.width.equalTo(22)
+            } else {
+                $0.size.equalTo(iconSize)
+            }
+
         })
 
         cellTitle.snp.makeConstraints({

@@ -44,10 +44,11 @@ class SearchView: UIView {
     private lazy var wordLabel: UILabel = {
         let label = UILabel()
         label.numberOfLines = 1
-        label.textAlignment = .natural
+        label.textAlignment = .right
         label.text = "0 \(trans("of")) 0"
         label.textColor = .subtitle
         label.font = .hellix(.semibold, size: 16)
+        label.adjustsFontSizeToFitWidth = true
         return label
     }()
 
@@ -100,11 +101,6 @@ private extension SearchView {
 
     func setupConstraits() {
 
-        wordLabel.snp.makeConstraints({
-            $0.trailing.equalToSuperview().inset(20)
-            $0.centerY.equalToSuperview()
-        })
-
         backView.snp.makeConstraints({
             $0.top.bottom.equalToSuperview()
             $0.leading.equalToSuperview().offset(20)
@@ -127,6 +123,12 @@ private extension SearchView {
             $0.size.equalTo(25)
             $0.centerY.equalToSuperview()
             $0.trailing.equalToSuperview().inset(8)
+        })
+
+        wordLabel.snp.makeConstraints({
+            $0.trailing.equalToSuperview().inset(20)
+            $0.centerY.equalToSuperview()
+            $0.leading.equalTo(backView.snp.trailing).offset(6)
         })
     }
 }

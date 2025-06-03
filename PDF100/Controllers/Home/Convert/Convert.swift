@@ -54,8 +54,6 @@ final class Convert: BaseSheetViewController {
         return button
     }()
 
-
-
     //MARK: -  Lifecicle
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)

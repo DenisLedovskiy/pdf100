@@ -7,13 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		92046F432DE8F32E00913EB5 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 92046F422DE8F32E00913EB5 /* FirebaseAnalytics */; };
+		92046F452DE8F32E00913EB5 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 92046F442DE8F32E00913EB5 /* FirebaseCrashlytics */; };
+		92046F472DE8F89500913EB5 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 92046F462DE8F89500913EB5 /* PrivacyInfo.xcprivacy */; };
 		9232B8E12DD66DD7001B8449 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9232B8E02DD66DD7001B8449 /* SnapKit */; };
 		9232B8E42DD66DEE001B8449 /* PanModal in Frameworks */ = {isa = PBXBuildFile; productRef = 9232B8E32DD66DEE001B8449 /* PanModal */; };
 		9232B8E72DD66E19001B8449 /* ApphudSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 9232B8E62DD66E19001B8449 /* ApphudSDK */; };
 		92618A332DDD1D0700E60EBD /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92618A322DDD1D0700E60EBD /* Config.swift */; };
+		92F1EFFA2DE792AB00990987 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 92F1EFF92DE792AB00990987 /* Lottie */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		92046F462DE8F89500913EB5 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		92618A322DDD1D0700E60EBD /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		92B5D2AE2DD512B9000AA2F9 /* PDF100.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PDF100.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -44,8 +49,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				92F1EFFA2DE792AB00990987 /* Lottie in Frameworks */,
 				9232B8E72DD66E19001B8449 /* ApphudSDK in Frameworks */,
 				9232B8E42DD66DEE001B8449 /* PanModal in Frameworks */,
+				92046F452DE8F32E00913EB5 /* FirebaseCrashlytics in Frameworks */,
+				92046F432DE8F32E00913EB5 /* FirebaseAnalytics in Frameworks */,
 				9232B8E12DD66DD7001B8449 /* SnapKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -56,6 +64,7 @@
 		92B5D2A52DD512B9000AA2F9 = {
 			isa = PBXGroup;
 			children = (
+				92046F462DE8F89500913EB5 /* PrivacyInfo.xcprivacy */,
 				92618A322DDD1D0700E60EBD /* Config.swift */,
 				92B5D2B02DD512B9000AA2F9 /* PDF100 */,
 				92B5D2AF2DD512B9000AA2F9 /* Products */,
@@ -80,6 +89,7 @@
 				92B5D2AA2DD512B9000AA2F9 /* Sources */,
 				92B5D2AB2DD512B9000AA2F9 /* Frameworks */,
 				92B5D2AC2DD512B9000AA2F9 /* Resources */,
+				92D86D312DEF17C900928964 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -93,6 +103,9 @@
 				9232B8E02DD66DD7001B8449 /* SnapKit */,
 				9232B8E32DD66DEE001B8449 /* PanModal */,
 				9232B8E62DD66E19001B8449 /* ApphudSDK */,
+				92F1EFF92DE792AB00990987 /* Lottie */,
+				92046F422DE8F32E00913EB5 /* FirebaseAnalytics */,
+				92046F442DE8F32E00913EB5 /* FirebaseCrashlytics */,
 			);
 			productName = PDF100;
 			productReference = 92B5D2AE2DD512B9000AA2F9 /* PDF100.app */;
@@ -135,6 +148,8 @@
 				9232B8DF2DD66DD7001B8449 /* XCRemoteSwiftPackageReference "SnapKit" */,
 				9232B8E22DD66DEE001B8449 /* XCRemoteSwiftPackageReference "PanModal" */,
 				9232B8E52DD66E19001B8449 /* XCRemoteSwiftPackageReference "ApphudSDK" */,
+				92F1EFF82DE792AB00990987 /* XCRemoteSwiftPackageReference "lottie-ios" */,
+				92046F412DE8F32E00913EB5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 92B5D2AF2DD512B9000AA2F9 /* Products */;
@@ -151,10 +166,36 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				92046F472DE8F89500913EB5 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		92D86D312DEF17C900928964 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}",
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${PRODUCT_NAME}",
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Info.plist",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/GoogleService-Info.plist",
+				"$(TARGET_BUILD_DIR)/$(EXECUTABLE_PATH)",
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		92B5D2AA2DD512B9000AA2F9 /* Sources */ = {
@@ -171,20 +212,26 @@
 		92B5D2C22DD512BB000AA2F9 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = AppIcon2;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = PDF100/PDF100.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = FALWNHMM4Z;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = PDF100/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = PDF100;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSCameraUsageDescription = NSCameraUsageDescription;
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = NSPhotoLibraryUsageDescription;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				IPHONEOS_DEPLOYMENT_TARGET = 16;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -206,20 +253,25 @@
 		92B5D2C32DD512BB000AA2F9 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = AppIcon2;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = PDF100/PDF100.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = FALWNHMM4Z;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = PDF100/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = PDF100;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSCameraUsageDescription = NSCameraUsageDescription;
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = NSPhotoLibraryUsageDescription;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				IPHONEOS_DEPLOYMENT_TARGET = 16;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -385,6 +437,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		92046F412DE8F32E00913EB5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.13.0;
+			};
+		};
 		9232B8DF2DD66DD7001B8449 /* XCRemoteSwiftPackageReference "SnapKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
@@ -409,9 +469,27 @@
 				minimumVersion = 3.6.2;
 			};
 		};
+		92F1EFF82DE792AB00990987 /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.5.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		92046F422DE8F32E00913EB5 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 92046F412DE8F32E00913EB5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		92046F442DE8F32E00913EB5 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 92046F412DE8F32E00913EB5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
+		};
 		9232B8E02DD66DD7001B8449 /* SnapKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 9232B8DF2DD66DD7001B8449 /* XCRemoteSwiftPackageReference "SnapKit" */;
@@ -426,6 +504,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9232B8E52DD66E19001B8449 /* XCRemoteSwiftPackageReference "ApphudSDK" */;
 			productName = ApphudSDK;
+		};
+		92F1EFF92DE792AB00990987 /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 92F1EFF82DE792AB00990987 /* XCRemoteSwiftPackageReference "lottie-ios" */;
+			productName = Lottie;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

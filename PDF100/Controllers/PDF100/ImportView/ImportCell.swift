@@ -22,6 +22,7 @@ final class ImportCell: PDF100CollectionCell {
         label.numberOfLines = 1
         label.font = .hellix(.bold, size: 18)
         label.textColor = .textBlack
+        label.adjustsFontSizeToFitWidth = true
         return label
     }()
 

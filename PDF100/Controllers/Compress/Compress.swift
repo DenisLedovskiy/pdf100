@@ -3,7 +3,11 @@ import UIKit
 
 final class Compress: PDF100ViewController {
 
-    private let tempName = "pdf-word-temp.pdf"
+    private var docName: String
+
+    private let client = APIClient2()
+
+    private var currentPercent = 30
 
     //MARK: - UI
 
@@ -88,9 +92,19 @@ final class Compress: PDF100ViewController {
         let label = UILabel()
         label.numberOfLines = 2
         label.textAlignment = .natural
-        label.text = trans("By increasing the quality, you increase the file size")
+//        label.text = trans("By increasing the quality, you increase the file size")
         label.textColor = .textBlack
         label.font = .hellix(.semibold, size: 16)
+        label.adjustsFontSizeToFitWidth = true
+
+        let attributedText = NSMutableAttributedString(string: trans("By increasing the quality, you increase the file size"))
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineSpacing = 4
+        attributedText.addAttribute(.paragraphStyle,
+                                    value: paragraphStyle,
+                                    range: NSRange(location: 0,
+                                                   length: attributedText.length))
+        label.attributedText = attributedText
         return label
     }()
 
@@ -116,7 +130,15 @@ final class Compress: PDF100ViewController {
 
     private lazy var compressButton: PdfButton = {
         let button = PdfButton()
-        button.setTitle(trans("Compress file"))
+        let normalAttributedString = NSAttributedString(
+            string: trans("Compress file"),
+            attributes: [
+                NSAttributedString.Key.foregroundColor : UIColor.white,
+                NSAttributedString.Key.font : UIFont.hellix(.bold, size: 18)
+            ]
+        )
+        button.setAttributedTitle(normalAttributedString, for: .normal)
+        button.setAttributedTitle(normalAttributedString, for: .highlighted)
         button.addTarget(self, action: #selector(tapCompress), for: .touchUpInside)
 
         button.setCornerRadius(24)
@@ -129,39 +151,32 @@ final class Compress: PDF100ViewController {
         return button
     }()
 
-    private lazy var thinkSlider: UISlider = {
-        let slider = UISlider()
+    private lazy var qualitySlider: CustomSlider = {
+        let slider = CustomSlider()
         slider.minimumValue = 0
         slider.maximumValue = 100
         slider.value = 30
         slider.minimumTrackTintColor = UIColor(patternImage: .gradientSample)
         slider.maximumTrackTintColor = .sliderGray
-        let thumbImage = createThumbImage(imageNamed: "sliderPimp", shadowOffset: CGSize(width: 0, height: 2), shadowBlurRadius: 3)
-        slider.setThumbImage(thumbImage, for: .normal)
-
-//        slider.setThumbImage(.sliderPimp, for: .normal)
         slider.addTarget(self, action: #selector(sliderChange(slider:event:)), for: .valueChanged)
-
-        slider.layer.masksToBounds = false
         return slider
     }()
 
-    private func createThumbImage(imageNamed: String, shadowOffset: CGSize, shadowBlurRadius: CGFloat) -> UIImage? {
-        guard let thumbIcon = UIImage(named: imageNamed)?.withRenderingMode(.alwaysOriginal) else { return nil }
+    private let loaderView: CompressLoaderView = {
+        let view = CompressLoaderView()
+        view.isHidden = true
+        return view
+    }()
 
-        // Create a transparent background image
-        let size = thumbIcon.size
-        let renderer = UIGraphicsImageRenderer(size: size)
+    // MARK: - Init
+    init(docName: String) {
+        self.docName = docName
+        print("Start name = \(self.docName)")
+        super.init(nibName: nil, bundle: nil)
+    }
 
-        let thumbImage = renderer.image { context in
-            // Apply shadow properties
-            context.cgContext.setShadow(offset: shadowOffset, blur: shadowBlurRadius, color: UIColor.black.withAlphaComponent(0.1).cgColor)
-
-            // Draw the thumb icon
-            thumbIcon.draw(at: CGPoint(x: 0, y: 0))
-        }
-
-        return thumbImage.withRenderingMode(.alwaysOriginal)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 
     //MARK: -  Lifecicle
@@ -176,7 +191,8 @@ final class Compress: PDF100ViewController {
         super.viewDidLoad()
         congifureConstraits()
 
-        setPDF()
+        updatePDF()
+        hideTabBar(true)
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -198,7 +214,19 @@ private extension Compress {
 
     @objc func tapCompress() {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        
+//        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+//        let fileName = "\(docName).pdf"
+//        if let fileURL = documentsDirectory?.appendingPathComponent(fileName) {
+//            uploadFile(url: fileURL)
+//        }
+        showLoader(true)
+    }
+
+    func showLoader( _ isShow: Bool) {
+        DispatchQueue.main.async {
+            self.loaderView.isHidden = !isShow
+            self.loaderView.startIndicator(isShow)
+        }
     }
 
     //MARK: - Slider
@@ -210,9 +238,79 @@ private extension Compress {
                 let rounded = slider.value.rounded()
                 let intPercent = Int(rounded)
                 percentLabel.text = "\(intPercent)%"
+                currentPercent = intPercent
             case .ended: return
             default:
                 break
+            }
+        }
+    }
+
+    private func uploadFile(url: URL) {
+        let fileName = url.lastPathComponent
+        client.fetchPreSignedUrl(for: fileName) { preSignedUrl, finalUrl in
+            guard let preSignedUrl = preSignedUrl, let finalUrl = finalUrl else {
+                print("Ошибка получения preSignedUrl")
+                self.showLoader(false)
+                return
+            }
+            self.client.uploadFile(to: preSignedUrl, fileURL: url) { success in
+                if success {
+                    print("Файл успешно загружен! Финальная ссылка: \(finalUrl)")
+                    self.startCompression(from: finalUrl,
+                                          quality: self.currentPercent)
+                } else {
+                    print("Ошибка загрузки файла.")
+                    self.showLoader(false)
+                }
+            }
+        }
+    }
+
+    private func startCompression(from url: String, quality: Int) {
+        client.compressPdf(fromUrl: url, compressionQuality: quality) { compressedUrl, error in
+            if let error = error {
+                print("Ошибка сжатия:", error)
+                self.showLoader(false)
+                return
+            }
+
+            guard let compressedUrl = compressedUrl else {
+                print("Невозможно получить URL сжатого файла.")
+                self.showLoader(false)
+                return
+            }
+
+            print("Сжатый файл доступен по ссылке:", compressedUrl)
+            self.downloadCompressedPdf(from: compressedUrl)
+        }
+    }
+
+    private func downloadCompressedPdf(from url: String) {
+        let documentsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        client.downloadPdf(fromUrl: url, saveTo: documentsDir) { fileUrl, error in
+            if let error = error {
+                print("Ошибка скачивания:", error.localizedDescription)
+                self.showLoader(false)
+                return
+            }
+            guard let fileUrl = fileUrl else {
+                print("Файл не найден после скачивания.")
+                self.showLoader(false)
+                return
+            }
+            let oldPDFUrl = fileUrl
+            let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+            let fileName = "\(self.docName).pdf"
+            if let fileURL = documentsDirectory?.appendingPathComponent(fileName) {
+                try? FileManager.default.removeItem(at: fileURL)
+                try? FileManager.default.moveItem(at: oldPDFUrl, to: fileURL)
+            }
+
+            UserDefSettings.isWasGoodMove = true
+            DispatchQueue.main.async {
+                self.showLoader(false)
+                self.navigationController?.popViewController(animated: true)
             }
         }
     }
@@ -221,31 +319,19 @@ private extension Compress {
 //MARK: - UI
 private extension Compress {
 
-    func setPDF() {
-        if let pdfURL = Bundle.main.url(forResource: "samplePDF", withExtension: "pdf") {
-            let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-            if let destinationPath = documentsDirectory?.appendingPathComponent(tempName) {
-                try? FileManager.default.removeItem(at: destinationPath)
-                try? FileManager.default.copyItem(at: pdfURL, to: destinationPath)
-            }
-        }
-        updatePDF()
-    }
-
     func updatePDF() {
         let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-        let fileName = tempName
+        let fileName = "\(docName).pdf"
         if let fileURL = documentsDirectory?.appendingPathComponent(fileName) {
             let newPdfDoc = PDFDocument(url: fileURL)
             pdfView.document = newPdfDoc
         }
-
-        sizeLabel.text = humanReadableSize(from: tempName)
+        sizeLabel.text = humanReadableSize(from: docName)
     }
 
     func humanReadableSize(from docName: String) -> String {
         let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-        let fileName = docName
+        let fileName = "\(docName).pdf"
         guard let fileURL = documentsDirectory?.appendingPathComponent(fileName) else {return ""}
 
         let fileAttributes = try? FileManager.default.attributesOfItem(atPath: fileURL.path)
@@ -270,7 +356,8 @@ private extension Compress {
         sheetView.addSubview(quailityLabel)
         sheetView.addSubview(percentLabel)
         sheetView.addSubview(compressButton)
-        sheetView.addSubview(thinkSlider)
+        sheetView.addSubview(qualitySlider)
+        view.addSubview(loaderView)
 
         backButton.snp.makeConstraints({
             $0.size.equalTo(38)
@@ -337,13 +424,17 @@ private extension Compress {
         compressButton.snp.makeConstraints({
             $0.leading.trailing.equalToSuperview().inset(20)
             $0.height.equalTo(66)
-            $0.bottom.equalToSuperview().inset(50)
+            $0.bottom.equalToSuperview().inset(phoneSize == .big ? 40 : 50)
         })
 
-        thinkSlider.snp.makeConstraints({
+        qualitySlider.snp.makeConstraints({
             $0.leading.trailing.equalToSuperview().inset(20)
             $0.top.equalTo(quailityLabel.snp.bottom).offset(6)
             $0.height.equalTo(40)
+        })
+
+        loaderView.snp.makeConstraints({
+            $0.edges.equalToSuperview()
         })
     }
 }

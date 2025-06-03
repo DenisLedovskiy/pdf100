@@ -42,9 +42,10 @@ final class SettingCell: PDF100CollectionCell {
         backgroundColor = .white
         layer.cornerRadius = cornerRadius
 
-        layer.shadowRadius = cornerRadius
+        layer.shadowRadius = 10
         layer.shadowOpacity = 1
-        layer.shadowColor = UIColor.black.withAlphaComponent(0.04).cgColor
+        layer.shadowColor = UIColor.black.withAlphaComponent(0.07).cgColor
+        layer.shadowOffset = CGSize(width: 0, height: 5)
         clipsToBounds = false
 
         // MARK: - Add Subviews

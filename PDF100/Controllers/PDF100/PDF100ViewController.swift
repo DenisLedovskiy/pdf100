@@ -77,16 +77,16 @@ extension PDF100ViewController {
     func showErrorSettingAlert(title: String, message: String) {
 
         DispatchQueue.main.async {
-//            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-//            alert.addAction(UIAlertAction(title: perevod("Settings"), style: UIAlertAction.Style.default, handler: { [weak self] _ in
-//                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-//                self?.openSettings()
-//            }))
-//            alert.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil))
-//
-//            DispatchQueue.main.async {
-//                self.present(alert, animated: true, completion: nil)
-//            }
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: trans("Settings"), style: UIAlertAction.Style.default, handler: { [weak self] _ in
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                self?.openSettings()
+            }))
+            alert.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil))
+
+            DispatchQueue.main.async {
+                self.present(alert, animated: true, completion: nil)
+            }
         }
     }
 

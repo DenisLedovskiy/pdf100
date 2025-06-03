@@ -43,12 +43,6 @@ final class ChangeIcon: BaseSheetViewController {
         imageView.clipsToBounds = true
         imageView.backgroundColor = .clear
         imageView.layer.cornerRadius = 22
-
-//        imageView.layer.shadowOpacity = 1
-//        imageView.layer.shadowRadius = 25
-//        imageView.layer.shadowOffset = CGSize(width: 0, height: -5)
-//        imageView.layer.shadowColor = UIColor.black.withAlphaComponent(0.07).cgColor
-//        imageView.clipsToBounds = false
         return imageView
     }()
 
@@ -75,12 +69,6 @@ final class ChangeIcon: BaseSheetViewController {
         imageView.clipsToBounds = true
         imageView.backgroundColor = .clear
         imageView.layer.cornerRadius = 22
-
-//        imageView.layer.shadowOpacity = 1
-//        imageView.layer.shadowRadius = 25
-//        imageView.layer.shadowOffset = CGSize(width: 0, height: -5)
-//        imageView.layer.shadowColor = UIColor.black.withAlphaComponent(0.07).cgColor
-//        imageView.clipsToBounds = false
         return imageView
     }()
 
@@ -98,7 +86,6 @@ final class ChangeIcon: BaseSheetViewController {
         let view = UIView()
         view.backgroundColor = .popWhite
         view.layer.cornerRadius = 22
-//        view.clipsToBounds = true
         view.layer.shadowOpacity = 1
         view.layer.shadowRadius = 10
         view.layer.shadowOffset = CGSize(width: 0, height: 5)
@@ -115,14 +102,12 @@ final class ChangeIcon: BaseSheetViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-//        congifureConstraits()
-//        setStartSelect()
     }
 
     //    MARK: - Ovverides
     override func setup() {
-        setStartSelect()
         congifureConstraits()
+        setStartSelect()
     }
 
 }
@@ -138,7 +123,6 @@ private extension ChangeIcon {
         dismiss(animated: true)
     }
 
-    //TODO: - user settings
     @objc func tapIcon1() {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
         borderView.snp.remakeConstraints({
@@ -150,11 +134,8 @@ private extension ChangeIcon {
             $0.size.equalTo(iconsize)
             $0.center.equalTo(icon2View)
         })
-//        icon1Button.layer.borderWidth = 6
-//        icon1Button.layer.borderColor = UIColor(patternImage: .settBanner).cgColor
-//        icon2Button.layer.borderWidth = 0
 
-//        UserSet.isFirstIconSet = true
+        UserDefSettings.isFirstIconSet = true
 
         UIApplication.shared.setAlternateIconName(nil)
     }
@@ -171,17 +152,11 @@ private extension ChangeIcon {
             $0.center.equalTo(icon1View)
         })
 
-//        icon2Button.layer.borderWidth = 6
-//        icon2Button.layer.borderColor = UIColor(patternImage: .settBanner).cgColor
-//        icon1Button.layer.borderWidth = 0
+        UserDefSettings.isFirstIconSet = false
 
-//        UserSet.isFirstIconSet = false
-
-        UIApplication.shared.setAlternateIconName("AppIcon1") { error in
+        UIApplication.shared.setAlternateIconName("AppIcon2") { error in
             if let error = error {
                 print(error.localizedDescription)
-            } else {
-                print("Success!")
             }
         }
     }
@@ -192,15 +167,27 @@ private extension ChangeIcon {
 private extension ChangeIcon {
 
     func setStartSelect() {
-//        if UserSet.isFirstIconSet ?? true {
-//            icon1Button.layer.borderWidth = 6
-//            icon1Button.layer.borderColor = UIColor(patternImage: .settBanner).cgColor
-//            icon2Button.layer.borderWidth = 0
-//        } else {
-//            icon2Button.layer.borderWidth = 6
-//            icon2Button.layer.borderColor = UIColor(patternImage: .settBanner).cgColor
-//            icon1Button.layer.borderWidth = 0
-//        }
+        if UserDefSettings.isFirstIconSet ?? true {
+            borderView.snp.remakeConstraints({
+                $0.size.equalTo(iconsize + 12)
+                $0.center.equalTo(icon1View)
+            })
+
+            shadowView.snp.remakeConstraints({
+                $0.size.equalTo(iconsize)
+                $0.center.equalTo(icon2View)
+            })
+        } else {
+            borderView.snp.remakeConstraints({
+                $0.size.equalTo(iconsize + 12)
+                $0.center.equalTo(icon2View)
+            })
+
+            shadowView.snp.remakeConstraints({
+                $0.size.equalTo(iconsize)
+                $0.center.equalTo(icon1View)
+            })
+        }
     }
 
     func congifureConstraits() {

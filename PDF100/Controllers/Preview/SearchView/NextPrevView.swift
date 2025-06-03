@@ -16,7 +16,7 @@ final class NextPrevView: UIView {
         button.setImage(.nextOn, for: .highlighted)
         button.addTarget(self, action: #selector(tapNext), for: .touchUpInside)
 
-        button.layer.shadowRadius = 6
+        button.layer.shadowRadius = 12
         button.layer.shadowOpacity = 1
         button.layer.shadowColor = UIColor.shadowBlue.withAlphaComponent(0.8).cgColor
         button.layer.shadowOffset = CGSize(width: 0, height: 9)
@@ -58,8 +58,9 @@ final class NextPrevView: UIView {
         layer.cornerRadius = 15
 
         layer.shadowOpacity = 1
-        layer.shadowRadius = 10
-        layer.shadowColor = UIColor.black.withAlphaComponent(0.3).cgColor
+        layer.shadowRadius = 11
+        layer.shadowColor = UIColor.black.withAlphaComponent(0.07).cgColor
+        layer.shadowOffset = CGSize(width: 0, height: 7)
         clipsToBounds = false
 
         addSubview(nextBtn)
@@ -71,7 +72,7 @@ final class NextPrevView: UIView {
         if isActive {
             nextBtn.setImage(.nextOn, for: .normal)
             nextBtn.setImage(.nextOn, for: .highlighted)
-            nextBtn.layer.shadowRadius = 6
+            nextBtn.layer.shadowRadius = 12
             nextBtn.layer.shadowOpacity = 1
             nextBtn.layer.shadowColor = UIColor.shadowBlue.withAlphaComponent(0.8).cgColor
             nextBtn.layer.shadowOffset = CGSize(width: 0, height: 9)
@@ -89,7 +90,7 @@ final class NextPrevView: UIView {
         if isActive {
             prevBtn.setImage(.prevOn, for: .normal)
             prevBtn.setImage(.prevOn, for: .highlighted)
-            prevBtn.layer.shadowRadius = 6
+            prevBtn.layer.shadowRadius = 12
             prevBtn.layer.shadowOpacity = 1
             prevBtn.layer.shadowColor = UIColor.shadowBlue.withAlphaComponent(0.8).cgColor
             prevBtn.layer.shadowOffset = CGSize(width: 0, height: 9)

@@ -44,7 +44,6 @@ final class ReorderVC: PDF100ViewController {
         let label = UILabel()
         label.numberOfLines = 1
         label.textAlignment = .center
-        label.text = trans("Settings das dsad asd as")
         label.textColor = .textBlack
         label.font = .hellix(.bold, size: 25)
         return label
@@ -81,7 +80,7 @@ final class ReorderVC: PDF100ViewController {
         imageView.contentMode = .scaleToFill
         imageView.backgroundColor = .clear
         imageView.image = .settBanner
-        imageView.layer.cornerRadius = 24
+        imageView.layer.cornerRadius = 12
         imageView.clipsToBounds = true
         return imageView
     }()
@@ -89,7 +88,7 @@ final class ReorderVC: PDF100ViewController {
     private let shadowBackView: UIView = {
         let view = UIView()
         view.backgroundColor = .white
-        view.layer.cornerRadius = 24
+        view.layer.cornerRadius = 12
         view.clipsToBounds = true
         view.layer.shadowRadius = 6
         view.layer.shadowOpacity = 1
@@ -134,6 +133,16 @@ final class ReorderVC: PDF100ViewController {
         super.viewDidDisappear(animated)
         guard isWasEdited else {return}
         delegate?.needAddStepFromReorder()
+    }
+
+    // MARK: - Init
+    init(docName: String) {
+        self.titleLabel.text = docName
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
     }
 }
 //MARK: - Private
@@ -492,26 +501,26 @@ private extension ReorderVC {
 
         titleLabel.snp.makeConstraints({
             $0.centerY.equalTo(backButton.snp.centerY)
-            $0.leading.equalToSuperview().offset(60)
-            $0.trailing.equalToSuperview().inset(60)
+            $0.leading.equalToSuperview().offset(80)
+            $0.trailing.equalToSuperview().inset(80)
         })
 
         shadowBackView.snp.makeConstraints({
             $0.top.equalTo(titleLabel.snp.bottom).offset(19)
             $0.leading.trailing.equalToSuperview().inset(20)
-            $0.height.equalTo(46)
+            $0.height.equalTo(56)
         })
 
         backView.snp.makeConstraints({
             $0.top.equalTo(titleLabel.snp.bottom).offset(19)
             $0.leading.trailing.equalToSuperview().inset(20)
-            $0.height.equalTo(46)
+            $0.height.equalTo(56)
         })
 
         iconView.snp.makeConstraints({
             $0.size.equalTo(28)
             $0.centerY.equalToSuperview()
-            $0.leading.equalToSuperview().offset(30)
+            $0.leading.equalToSuperview().offset(phoneSize == .big ? 70 : 30)
         })
 
         descLabel.snp.makeConstraints({
@@ -529,7 +538,7 @@ private extension ReorderVC {
         bottomMenu.snp.makeConstraints({
             $0.leading.trailing.equalToSuperview().inset(20)
             $0.height.equalTo(78)
-            $0.bottom.equalToSuperview().offset(-44)
+            $0.bottom.equalToSuperview().offset(isSmallPhone ? -20 : -44)
         })
     }
 
@@ -542,11 +551,5 @@ private extension ReorderVC {
     func setContent(_ isDrag: Bool) {
         iconView.image = isDrag ? .reorderDragTip : .reorderDeleteTip
         descLabel.text = isDrag ? trans("Drag pages to rearrange them") : trans("You can delete or rotate files using the toolbar")
-        backView.snp.updateConstraints({
-            $0.height.equalTo(isDrag ? 46 : 56)
-        })
-        shadowBackView.snp.updateConstraints({
-            $0.height.equalTo(isDrag ? 46 : 56)
-        })
     }
 }

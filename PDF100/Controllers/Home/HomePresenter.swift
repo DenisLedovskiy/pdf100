@@ -8,8 +8,9 @@ protocol HomePresenterInterface {
     func needShare(_ index: Int)
     func needDeleteDoc(_ index: Int)
     func needShowConverMenu(sheet: UIViewController)
-    func needShowDocument()
-    func needRouteCompress()
+    func needShowDocument(index: Int)
+    func needShowDocumentByName(docName: String)
+    func needRouteCompress(docName: String)
 }
 
 final class HomePresenter: NSObject {
@@ -36,10 +37,14 @@ private extension HomePresenter {
                 if self.cdDataSource.count > 0 {
                     let docs = self.cdDataSource.getAllPDFModels()
                     self.pdfDocArray = docs
-                    self.view?.updateCollection(docs)
+                    DispatchQueue.main.async {
+                        self.view?.updateCollection(docs)
+                    }
                 } else {
                     self.pdfDocArray = [HomeCellModel]()
-                    self.view?.updateCollection([HomeCellModel]())
+                    DispatchQueue.main.async {
+                        self.view?.updateCollection([HomeCellModel]())
+                    }
                 }
                 completion?()
             }
@@ -65,6 +70,7 @@ private extension HomePresenter {
         let document = images.makePDF()
         let fileName = getFileNameForPDF()
 
+
         let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
         guard let fileURL = documentsDirectory?.appendingPathComponent("\(fileName).pdf") else {return}
 
@@ -74,7 +80,7 @@ private extension HomePresenter {
 
     func getFileNameForPDF() -> String {
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd-MM-yy HH:mm"
+        dateFormatter.dateFormat = "dd-MM HH:mm:ss"
         let currentDateTimeString = dateFormatter.string(from: Date())
         return "\(currentDateTimeString)"
     }
@@ -100,12 +106,17 @@ private extension HomePresenter {
 // MARK: - HomePresenterInterface
 
 extension HomePresenter: HomePresenterInterface {
-    func needRouteCompress() {
-        router.showCompress()
+    func needShowDocumentByName(docName: String) {
+        router.showDocument(docName:docName)
     }
     
-    func needShowDocument() {
-        router.showDocument()
+    func needRouteCompress(docName: String) {
+        router.showCompress(docName: docName)
+    }
+    
+    func needShowDocument(index: Int) {
+        let name = pdfDocArray[index].title
+        router.showDocument(docName: name)
     }
     
     func needShowConverMenu(sheet: UIViewController) {
@@ -114,9 +125,8 @@ extension HomePresenter: HomePresenterInterface {
     
     func needDeleteDoc(_ index: Int) {
         let pdf = pdfDocArray[index]
-        deleteFromFolder(index: index)
         let docs = cdDataSource.getAllPdf()
-        if let indsxInCD = docs.firstIndex(where: {$0.id == pdf.id}) {
+        if let indsxInCD = docs.firstIndex(where: {$0.id == pdf.idCD}) {
             Store.viewContext.deleteItem(object: docs[indsxInCD]) { result in
                 switch result {
                 case .fail(let error): print("Error: ", error)
@@ -125,6 +135,7 @@ extension HomePresenter: HomePresenterInterface {
                 }
             }
         }
+        deleteFromFolder(index: index)
     }
     
     func needShare(_ index: Int) {
@@ -143,13 +154,16 @@ extension HomePresenter: HomePresenterInterface {
         saveAsPDF(images: images)
     }
 
-    //TODO: - повявлялка фидбека
     func viewWillAppear() {
         fetchDocs()
-//        router.showFeedback()
+
+        if !(UserDefSettings.isShowedLikeIt ?? false) && UserDefSettings.isWasGoodMove ?? false {
+            router.showFeedback()
+        }
     }
     
     func viewDidLoad(withView view: HomePresenterOutputInterface) {
         self.view = view
+        UserDefSettings.isNotOneEnter = true
     }
 }

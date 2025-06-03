@@ -6,6 +6,12 @@ final class PriceView: UIView {
 
     private let colorGradient = UIColor(patternImage: .gradientSmall)
 
+    private var topBottomInset: Double = switch phoneSize {
+    case .small: 11
+    case .medium: 13
+    case .big: 16
+    }
+
     // MARK: - views
 
     private lazy var backImg: UIImageView = {
@@ -84,11 +90,10 @@ final class PriceView: UIView {
         backgroundColor = .white
         layer.cornerRadius = 20
 
-        layer.shadowRadius = 18
         layer.shadowOpacity = 0.8
         layer.shadowRadius = 6
-        layer.shadowColor = UIColor.black.withAlphaComponent(0.18).cgColor
-        layer.shadowOffset = CGSize(width: 0, height: 6)
+        layer.shadowColor = UIColor.black.withAlphaComponent(0.07).cgColor
+        layer.shadowOffset = CGSize(width: 0, height: 7)
         clipsToBounds = false
 
         addSubview(backImg)
@@ -148,12 +153,12 @@ private extension PriceView {
 
         titleLabel.snp.makeConstraints({
             $0.leading.equalTo(dotView.snp.trailing).offset(10)
-            $0.top.equalToSuperview().offset(11)
+            $0.top.equalToSuperview().offset(topBottomInset)
         })
 
         priceLabel.snp.makeConstraints({
             $0.leading.equalTo(dotView.snp.trailing).offset(10)
-            $0.bottom.equalToSuperview().inset(11)
+            $0.bottom.equalToSuperview().inset(topBottomInset)
         })
 
         rightpPriceLabel.snp.makeConstraints({

@@ -14,13 +14,13 @@ class PayWallBRouter: NSObject {
 
 extension PayWallBRouter: PayWallBRouterInterface {
     func dismiss() {
-//        if UserSet.isNotFirstEnter ?? false {
-//            guard let viewController = controller else { return }
-//            viewController.dismiss(animated: false)
-//        } else {
-//            let appStarter = AppStarter()
-//            appStarter.startMainScene()
-//        }
+        if UserDefSettings.isNotOneEnter ?? false {
+            guard let viewController = controller else { return }
+            viewController.dismiss(animated: false)
+        } else {
+            let appStarter = AppBuilder()
+            appStarter.startMainScene()
+        }
     }
 
     func openLink(_ url: URL) {

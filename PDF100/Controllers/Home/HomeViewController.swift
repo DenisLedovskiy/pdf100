@@ -24,7 +24,10 @@ final class HomeViewController: PDF100ViewController {
     private var selectIndexDoc = 0
     var fileURL: URL!
 
-//    private var isConvertMenu = false
+    private let client = APIClient2()
+    private var isConvectorMode = false
+    private var isCompressMode = false
+    private var isNeedPreview: Bool = false
 
     // MARK: - UI
 
@@ -33,6 +36,17 @@ final class HomeViewController: PDF100ViewController {
         slideVC.modalPresentationStyle = .custom
         slideVC.transitioningDelegate = self
         slideVC.didDocTap = {
+            self.client.checkInternetConnection { connected in
+                if connected {
+                    self.isConvectorMode = true
+                    DispatchQueue.main.async {
+                        self.openDocumentDocPicker()
+                    }
+                } else {
+                    self.showErrorSettingAlert(title: trans("No internet connection"),
+                                               message: trans("An internet connection is required for this function to work"))
+                }
+            }
 
         }
         slideVC.didImgTap = {
@@ -99,6 +113,12 @@ final class HomeViewController: PDF100ViewController {
         return collectionView
     }()
 
+    private let loaderView: HomeLoaderView = {
+        let view = HomeLoaderView()
+        view.isHidden = true
+        return view
+    }()
+
     init(presenter: HomePresenterInterface, router: HomeRouterInterface) {
         self.presenter = presenter
         self.router = router
@@ -112,7 +132,7 @@ final class HomeViewController: PDF100ViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         presenter?.viewWillAppear()
-        hideNavBar(false)
+        hideNavBar(true)
         hideTabBar(false)
     }
 
@@ -128,13 +148,32 @@ final class HomeViewController: PDF100ViewController {
 
 extension HomeViewController: HomePresenterOutputInterface {
     func updateCollection(_ data: [HomeCellModel]) {
+        showLoader(false)
+        tabBar?.setHome()
         guard !data.isEmpty else {
             emptyView.isHidden = false
             collectionView.isHidden = true
             return
         }
+        emptyView.isHidden = true
+        collectionView.isHidden = false
         sections = HomeSection.makeSection(data)
         applySnapshot()
+
+        if isNeedPreview {
+            isNeedPreview = false
+            let lastIndex = data.count - 1
+            presenter?.needShowDocument(index: lastIndex)
+        }
+
+        if isCompressMode {
+            isCompressMode = false
+            if let name = data.first?.title {
+                DispatchQueue.main.asyncAfter(wallDeadline: .now() + 0.3) {
+                    self.presenter?.needRouteCompress(docName: name)
+                }
+            }
+        }
     }
 }
 
@@ -142,13 +181,95 @@ extension HomeViewController: HomePresenterOutputInterface {
 
 private extension HomeViewController {
 
-    //TODO: do compress
     func selectCompressor() {
-        presenter?.needRouteCompress()
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        client.checkInternetConnection { connected in
+            if connected {
+                self.isCompressMode = true
+                DispatchQueue.main.async {
+                    self.tabBar?.openMenu()
+                }
+            } else {
+                self.showErrorSettingAlert(title: trans("No internet connection"),
+                                           message: trans("An internet connection is required for this function to work"))
+            }
+        }
+
     }
 
     func selectConventer() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
         presenter?.needShowConverMenu(sheet: convertVC)
+    }
+}
+
+//MARK: - Convert
+
+private extension HomeViewController {
+
+    private func uploadFile(url: URL) {
+        showLoader(true)
+        let fileName = url.lastPathComponent
+        client.fetchPreSignedUrl(for: fileName) { preSignedUrl, finalUrl in
+            guard let preSignedUrl = preSignedUrl, let finalUrl = finalUrl else {
+                print("Ошибка получения preSignedUrl")
+                self.showLoader(false)
+                return
+            }
+            self.client.uploadFile(to: preSignedUrl, fileURL: url) { success in
+                if success {
+                    print("Файл успешно загружен! Финальная ссылка: \(finalUrl)")
+                    self.startConversion(from: finalUrl, fileName: fileName)
+                } else {
+                    print("Ошибка загрузки файла.")
+                    self.showLoader(false)
+                }
+            }
+        }
+    }
+
+    private func startConversion(from url: String, fileName: String) {
+        client.convertDocToPdf(fromUrl: url, filename: "converted_\(fileName).pdf") { convertedUrl, error in
+            if let error = error {
+                print("Ошибка преобразования:", error.localizedDescription)
+                self.showLoader(false)
+                return
+            }
+            guard let convertedUrl = convertedUrl else {
+                print("Нет URL результата преобразования.")
+                self.showLoader(false)
+                return
+            }
+            self.downloadConvertedPdf(from: convertedUrl)
+        }
+    }
+
+    private func downloadConvertedPdf(from url: String) {
+        let documentsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        client.downloadPdf(fromUrl: url, saveTo: documentsDir) { fileUrl, error in
+            if let error = error {
+                print("Ошибка скачивания:", error.localizedDescription)
+                self.showLoader(false)
+                return
+            }
+            guard let fileUrl = fileUrl else {
+                print("Файл не найден после скачивания.")
+                self.showLoader(false)
+                return
+            }
+            print("Файл успешно сохранен по пути:", fileUrl.path)
+
+            let filenameWithoutExtension = fileUrl.lastPathComponent
+            self.presenter?.addPDF(filenameWithoutExtension)
+        }
+    }
+
+    func showLoader(_ isShow: Bool) {
+        DispatchQueue.main.async {
+            self.hideTabBar(isShow)
+            self.loaderView.startIndicator(isShow)
+            self.loaderView.isHidden = !isShow
+        }
     }
 }
 
@@ -203,7 +324,6 @@ extension HomeViewController: UICollectionViewDelegate {
 //MARK: - CellMenu
 private extension HomeViewController {
     func showSheetAlert() {
-        //TODO: - vожет сделать блюр
         let alertStyle = UIAlertController.Style.actionSheet
 
         let alert = UIAlertController(title: "",
@@ -214,8 +334,7 @@ private extension HomeViewController {
                                       style: .default,
                                       handler: { [self] (UIAlertAction) in
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            //TODO: - Сделать добавление документа
-            self.presenter?.needShowDocument()
+            self.presenter?.needShowDocument(index: selectIndexDoc)
         }))
         alert.addAction(UIAlertAction(title: trans("Edit file"),
                                       style: .default,
@@ -268,21 +387,22 @@ private extension HomeViewController {
         view.addSubview(emptyView)
         view.addSubview(headerLabel)
         view.addSubview(collectionView)
+        view.addSubview(loaderView)
 
         titleLabel.snp.makeConstraints({
             $0.centerX.equalToSuperview()
-            $0.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(isSmallPhone ? 10 : 28)
+            $0.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(isSmallPhone ? 20 : 28)
         })
 
         compressView.snp.makeConstraints({
-            $0.top.equalTo(titleLabel.snp.bottom).offset(34)
+            $0.top.equalTo(titleLabel.snp.bottom).offset(isSmallPhone ? 16 : 34)
             $0.leading.equalToSuperview().offset(19)
             $0.height.equalTo(118)
             $0.trailing.equalTo(view.snp.centerX).offset(-7)
         })
 
         conventorView.snp.makeConstraints({
-            $0.top.equalTo(titleLabel.snp.bottom).offset(34)
+            $0.top.equalTo(titleLabel.snp.bottom).offset(isSmallPhone ? 16 : 34)
             $0.trailing.equalToSuperview().inset(19)
             $0.height.equalTo(118)
             $0.leading.equalTo(view.snp.centerX).offset(7)
@@ -294,14 +414,18 @@ private extension HomeViewController {
         })
 
         emptyView.snp.makeConstraints({
-            $0.top.equalTo(headerLabel.snp.bottom)
+            $0.top.equalTo(headerLabel.snp.bottom).offset(phoneSize == .big ? 60 : 0)
             $0.leading.trailing.bottom.equalToSuperview()
         })
 
         collectionView.snp.makeConstraints({
-            $0.top.equalTo(headerLabel.snp.bottom).offset(18)
+            $0.top.equalTo(headerLabel.snp.bottom).offset(isSmallPhone ? 12 : 18)
             $0.leading.trailing.equalToSuperview()
             $0.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
+        })
+
+        loaderView.snp.makeConstraints({
+            $0.edges.equalToSuperview()
         })
     }
 }
@@ -388,6 +512,16 @@ private extension HomeViewController {
         present(documentPicker, animated: true, completion: nil)
     }
 
+    func openDocumentDocPicker() {
+        let allowedUTTypes: [String] = [
+            "com.microsoft.word.doc",
+            "org.openxmlformats.wordprocessingml.document"
+        ]
+        let picker = UIDocumentPickerViewController(forOpeningContentTypes: allowedUTTypes.map { UTType($0)! })
+        picker.delegate = self
+        picker.modalPresentationStyle = .formSheet
+        present(picker, animated: true, completion: nil)
+    }
 }
 
 //MARK: - VNDocumentCameraViewControllerDelegate
@@ -450,19 +584,41 @@ extension HomeViewController: PHPickerViewControllerDelegate {
 //MARK: - UIDocumentPickerDelegate
 extension HomeViewController: UIDocumentPickerDelegate {
 
+    func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
+        isConvectorMode = false
+    }
+
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
-        guard let sourceUrl = urls.first,
-              let documentsUrl = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
+        if isConvectorMode == true {
+            isConvectorMode = false
+            guard let sourceUrl = urls.first,
+                  sourceUrl.startAccessingSecurityScopedResource(),
+                  let documentsUrl = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
+            let fileManager = FileManager.default
+            let destinationURL = documentsUrl.appendingPathComponent(sourceUrl.lastPathComponent)
 
-        let originalFileName = sourceUrl.lastPathComponent
-        let uniqueFileName = getUniqueFileName(originalFileName, in: documentsUrl)
-        let destinationUrl = documentsUrl.appendingPathComponent(uniqueFileName)
+            try? fileManager.removeItem(at: destinationURL)
+            do {
+                try fileManager.copyItem(at: sourceUrl, to: destinationURL)
+                uploadFile(url: destinationURL)
+            } catch {
+                print("Ошибка копирования файла: \(error)")
+            }
+        } else {
+            isNeedPreview = true
+            guard let sourceUrl = urls.first,
+                  let documentsUrl = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
 
-        do {
-            try FileManager.default.copyItem(at: sourceUrl, to: destinationUrl)
-            presenter?.addPDF(uniqueFileName)
-        } catch {
-            print(error.localizedDescription)
+            let originalFileName = sourceUrl.lastPathComponent
+            let uniqueFileName = getUniqueFileName(originalFileName, in: documentsUrl)
+            let destinationUrl = documentsUrl.appendingPathComponent(uniqueFileName)
+
+            do {
+                try FileManager.default.copyItem(at: sourceUrl, to: destinationUrl)
+                presenter?.addPDF(uniqueFileName)
+            } catch {
+                print(error.localizedDescription)
+            }
         }
     }
 
@@ -492,6 +648,11 @@ extension HomeViewController: UIDocumentPickerDelegate {
 
 //MARK: - AppTabBarDelegate
 extension HomeViewController: AppTabBarDelegate {
+    func cancelAnyMode() {
+        isConvectorMode = false
+        isCompressMode = false
+    }
+    
     func appTabBarDidTapMenu(_ index: Int) {
         switch index {
         case 0:

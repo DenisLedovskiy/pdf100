@@ -41,18 +41,16 @@ class BottomMenu: UIView {
     }
 
     func setup() {
-
         backgroundColor = .white
         layer.cornerRadius = 30
 
         layer.shadowOpacity = 1
-        layer.shadowRadius = 10
-//        layer.shadowOffset = CGSize(width: 0, height: -5)
-        layer.shadowColor = UIColor.black.withAlphaComponent(0.3).cgColor
+        layer.shadowRadius = 21
+        layer.shadowColor = UIColor.black.withAlphaComponent(0.11).cgColor
+        layer.shadowOffset = CGSize(width: 0, height: 5)
         clipsToBounds = false
 
         addSubview(collectionView)
-
         setupConstraits()
         applySnapshot()
     }
@@ -184,7 +182,7 @@ private extension BottomMenu {
     func setupConstraits() {
         collectionView.snp.makeConstraints({
             $0.leading.trailing.equalToSuperview()
-            $0.top.equalToSuperview().offset(14)
+            $0.top.equalToSuperview().offset(isEnLocal ? 18 : 14)
             $0.bottom.equalToSuperview()
         })
     }

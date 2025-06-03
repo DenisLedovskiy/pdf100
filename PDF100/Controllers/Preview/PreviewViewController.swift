@@ -18,6 +18,7 @@ final class PreviewViewController: PDF100ViewController {
     private var allPages: Int = 10
 
     private let tempName = "pdf-word-temp.pdf"
+    private var originalNameFile: String = ""
 
     var foundSelections: [PDFSelection] = []
     var currentSelectionIndex: Int = 0
@@ -82,7 +83,6 @@ final class PreviewViewController: PDF100ViewController {
         let label = UILabel()
         label.numberOfLines = 1
         label.textAlignment = .center
-        label.text = trans("Settings das dsad asd as")
         label.textColor = .textBlack
         label.font = .hellix(.bold, size: 25)
         return label
@@ -100,7 +100,15 @@ final class PreviewViewController: PDF100ViewController {
 
     private lazy var saveButton: PdfButton = {
         let button = PdfButton()
-        button.setTitle(trans("Save"))
+        let normalAttributedString = NSAttributedString(
+            string: trans("Save"),
+            attributes: [
+                NSAttributedString.Key.foregroundColor : UIColor.white,
+                NSAttributedString.Key.font : UIFont.hellix(.bold, size: 18)
+            ]
+        )
+        button.setAttributedTitle(normalAttributedString, for: .normal)
+        button.setAttributedTitle(normalAttributedString, for: .highlighted)
         button.addTarget(self, action: #selector(tapSave), for: .touchUpInside)
 
         button.setCornerRadius(12)
@@ -153,9 +161,11 @@ final class PreviewViewController: PDF100ViewController {
         return view
     }()
 
-    init(presenter: PreviewPresenterInterface, router: PreviewRouterInterface) {
+    // MARK: - Init
+    init(docName: String, presenter: PreviewPresenterInterface, router: PreviewRouterInterface) {
         self.presenter = presenter
         self.router = router
+        self.originalNameFile = docName
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -163,6 +173,7 @@ final class PreviewViewController: PDF100ViewController {
         super.init(coder: coder)
     }
 
+    // MARK: - Lifecicle
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         hideNavBar(true)
@@ -172,12 +183,11 @@ final class PreviewViewController: PDF100ViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        setPDF()
         customInit()
+        setPDFStart(originalNameFile)
         presenter?.viewDidLoad(withView: self)
 
         pdfView.delegate = self
-
         NotificationCenter.default.addObserver(self,
                     selector: #selector(pageDidChange(notification:)),
                       name: Notification.Name.PDFViewPageChanged,
@@ -208,6 +218,12 @@ extension PreviewViewController: PreviewPresenterOutputInterface {
             let newPdfDoc = PDFDocument(url: fileURL)
             pdfView.document = newPdfDoc
             allPages = newPdfDoc?.pageCount ?? 10
+
+            if let currentPage = pdfView.currentPage {
+                let page = (pdfView.document?.index(for: currentPage) ?? 0) + 1
+                self.currentPage = page
+                pageLabel.text = "\(trans("Page")) \(page) \(trans("of")) \(allPages)"
+            }
         }
     }
 }
@@ -235,7 +251,7 @@ private extension PreviewViewController {
                 $0.top.equalTo(pageLabel.snp.bottom).offset(isSearchMode ? 70 : 30)
             })
         case 1:
-            presenter?.selectReorder()
+            presenter?.selectReorder(name: originalNameFile)
         case 2:
             let previewController = QLPreviewController()
             previewController.dataSource = self
@@ -249,44 +265,17 @@ private extension PreviewViewController {
         }
     }
 
-    //TODO: - predlagat save
     @objc func tapBack() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
         presenter?.needShowDelete(sheet: deleteVC)
     }
 
     @objc func tapSave() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        UserDefSettings.isWasGoodMove = true
         saveFile()
         presenter?.needDismiss()
     }
-
-//    func highlightWord(_ word: String, in document: PDFDocument) {
-//        foundSelections.removeAll()
-//
-//        for pageIndex in 0..<document.pageCount {
-//            if let page = document.page(at: pageIndex) {
-//                let content = page.string ?? ""
-//
-//                // Search for the word in the page content
-//                var range = content.range(of: word, options: .caseInsensitive)
-//
-//                while let foundRange = range {
-//                    let nsRange = NSRange(foundRange, in: content)
-//
-//                    // Create a selection based on the range found
-//                    if let selection = page.selection(for: nsRange) {
-//                        // Create the highlight annotation
-//                        let highlight = PDFAnnotation(bounds: selection.bounds(for: page), forType: .highlight, withProperties: nil)
-//                        highlight.color = UIColor.blue.withAlphaComponent(0.5) // Set highlight color to blue
-//                        page.addAnnotation(highlight)
-//                    }
-//
-//                    // Search for next occurrence
-//                    let startIndex = content.index(after: foundRange.lowerBound)
-//                    range = content.range(of: word, options: .caseInsensitive, range: startIndex..<content.endIndex)
-//                }
-//            }
-//        }
-//    }
 
     func removeAnnotationsFromPDF() {
         guard let pdfDoc = pdfView.document else { return }
@@ -305,22 +294,16 @@ private extension PreviewViewController {
         for pageIndex in 0..<document.pageCount {
             if let page = document.page(at: pageIndex) {
                 let content = page.string ?? ""
-
-                // Search for the word in the page content
                 var range = content.range(of: word, options: .caseInsensitive)
 
                 while let foundRange = range {
                     let nsRange = NSRange(foundRange, in: content)
-
-                    // Create a selection for the found range
                     if let selection = page.selection(for: nsRange) {
-                        foundSelections.append(selection) // Store the selection
+                        foundSelections.append(selection)
                         let highlight = PDFAnnotation(bounds: selection.bounds(for: page), forType: .highlight, withProperties: nil)
-                        highlight.color = UIColor.buttonGradientStart.withAlphaComponent(0.3)
+                        highlight.color = UIColor.buttonGradientStart.withAlphaComponent(0.6)
                         page.addAnnotation(highlight)
                     }
-
-                    // Search for next occurrence
                     let startIndex = content.index(after: foundRange.lowerBound)
                     range = content.range(of: word, options: .caseInsensitive, range: startIndex..<content.endIndex)
                 }
@@ -335,7 +318,6 @@ private extension PreviewViewController {
         } else {
             searchView.setWord(current: 0, all: 0)
             nextPrev.isHidden = true
-            print("No occurrences found")
         }
     }
 
@@ -343,7 +325,7 @@ private extension PreviewViewController {
         if !foundSelections.isEmpty {
             let selection = foundSelections[currentSelectionIndex]
             pdfView.setCurrentSelection(selection, animate: true)
-            pdfView.go(to: selection.pages.first!) // Navigate to the page where the word is located
+            pdfView.go(to: selection.pages.first!)
         }
     }
 
@@ -388,12 +370,11 @@ private extension PreviewViewController {
     }
 
     func saveFile() {
-        if let pdfURL = Bundle.main.url(forResource: "samplePDF", withExtension: "pdf") {
-            let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-            if let tempUrl = documentsDirectory?.appendingPathComponent(tempName) {
-                try? FileManager.default.removeItem(at: pdfURL)
-                try? FileManager.default.copyItem(at: tempUrl, to: pdfURL)
-            }
+        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+        if let tempUrl = documentsDirectory?.appendingPathComponent(tempName),
+           let destinationPath = documentsDirectory?.appendingPathComponent("\(originalNameFile).pdf") {
+            try? FileManager.default.removeItem(at: destinationPath)
+            try? FileManager.default.copyItem(at: tempUrl, to: destinationPath)
         }
     }
 
@@ -417,14 +398,14 @@ private extension PreviewViewController {
 // MARK: - UISetup
 
 private extension PreviewViewController {
-    //TODO: - поменять на файл 
-    func setPDF() {
-        if let pdfURL = Bundle.main.url(forResource: "samplePDF", withExtension: "pdf") {
-            let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-            if let destinationPath = documentsDirectory?.appendingPathComponent(tempName) {
-                try? FileManager.default.removeItem(at: destinationPath)
-                try? FileManager.default.copyItem(at: pdfURL, to: destinationPath)
-            }
+    func setPDFStart(_ name: String) {
+        titleLabel.text = name
+        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+        let fileName = "\(name).pdf"
+        if let fileURL = documentsDirectory?.appendingPathComponent(fileName),
+           let destinationPath = documentsDirectory?.appendingPathComponent(tempName) {
+            try? FileManager.default.removeItem(at: destinationPath)
+            try? FileManager.default.copyItem(at: fileURL, to: destinationPath)
         }
         updatePDF()
     }
@@ -437,7 +418,6 @@ private extension PreviewViewController {
             let newPdfDoc = PDFDocument(url: fileURL)
             pdfView.document = newPdfDoc
             allPages = newPdfDoc?.pageCount ?? 10
-
             pageLabel.text = "\(trans("Page")) \(currentPage) \(trans("of")) \(allPages)"
         }
     }
@@ -470,24 +450,34 @@ private extension PreviewViewController {
             $0.leading.equalToSuperview().offset(15)
         })
 
-        let width = trans("Save").widthOfString(usingFont: .hellix(.bold, size: 16))
+        let width = trans("Save").widthOfString(usingFont: .hellix(.bold, size: 18))
         saveButton.snp.makeConstraints({
-            $0.trailing.equalToSuperview().inset(16)
+            if currentLocal.contains("de") {
+                $0.trailing.equalToSuperview().inset(10)
+            } else {
+                $0.trailing.equalToSuperview().inset(16)
+            }
             $0.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(24)
             $0.height.equalTo(34)
-            $0.width.equalTo(width + 20)
+            $0.width.equalTo(width + 30)
         })
 
         titleLabel.snp.makeConstraints({
             $0.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(19)
-            $0.leading.equalToSuperview().offset(60)
-            $0.trailing.equalTo(saveButton.snp.leading).inset(-6)
+            $0.leading.equalToSuperview().offset(80)
+            if currentLocal.contains("de") {
+                $0.leading.equalToSuperview().offset(80)
+                $0.trailing.equalToSuperview().inset(128)
+            } else {
+                $0.leading.equalToSuperview().offset(60)
+                $0.trailing.equalTo(saveButton.snp.leading).inset(-10)
+            }
         })
 
         pageLabel.snp.makeConstraints({
             $0.leading.equalToSuperview().offset(60)
             $0.trailing.equalTo(saveButton.snp.leading).inset(-6)
-            $0.top.equalTo(titleLabel.snp.bottom).offset(4)
+            $0.top.equalTo(titleLabel.snp.bottom).offset(8)
         })
 
         searchView.snp.makeConstraints({
@@ -505,7 +495,7 @@ private extension PreviewViewController {
         bottomMenu.snp.makeConstraints({
             $0.leading.trailing.equalToSuperview().inset(20)
             $0.height.equalTo(78)
-            $0.bottom.equalToSuperview().offset(-44)
+            $0.bottom.equalToSuperview().offset(isSmallPhone ? -20 : -44)
         })
 
         nextPrev.snp.makeConstraints({

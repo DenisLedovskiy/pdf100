@@ -5,24 +5,20 @@ final class AppBuilder {
     private var window: UIWindow?
 
     func start() {
-        startMainScene()
-//        goOnboardingScreen()
-//        if UserSet.isNotFirstEnter ?? false {
-//            startMainScene()
-//        } else {
-//            UserSet.isShowedLikeIt = false
-//            UserSet.isFirstIconSet = true
-//            UserSet.isWasSuccesMove = false
-//            goOnboardingScreen()
-//        }
+        if UserDefSettings.isNotOneEnter ?? false {
+            startMainScene()
+        } else {
+            UserDefSettings.isShowedLikeIt = false
+            UserDefSettings.isFirstIconSet = true
+            UserDefSettings.isWasGoodMove = false
+            goOnboardingScreen()
+        }
     }
 
     func goOnboardingScreen() {
-        let vc = PayWallInit.createViewController()
-        showController(vc)
-
-//        let vc = UINavigationController(rootViewController: OnbordingViewController())
-//        showController(vc)
+        let vc = OnbordingViewController()
+        let navVC = UINavigationController(rootViewController: vc)
+        showController(navVC)
     }
 
     func startMainScene() {

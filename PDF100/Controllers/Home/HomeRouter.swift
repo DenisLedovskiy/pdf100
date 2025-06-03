@@ -4,8 +4,8 @@ protocol HomeRouterInterface: AnyObject {
     func showFeedback()
     func showShare(_ url: URL)
     func showConvertMenu(sheet: UIViewController)
-    func showDocument()
-    func showCompress()
+    func showDocument(docName: String)
+    func showCompress(docName: String)
 }
 
 class HomeRouter: NSObject {
@@ -15,15 +15,15 @@ class HomeRouter: NSObject {
 // MARK: - HomeRouterInterface
 
 extension HomeRouter: HomeRouterInterface {
-    func showCompress() {
+    func showCompress(docName: String) {
         guard let viewController = controller else { return }
-        let controller = Compress()
+        let controller = Compress(docName: docName)
         viewController.navigationController?.pushViewController(controller, animated: true)
     }
     
-    func showDocument() {
+    func showDocument(docName: String) {
         guard let viewController = controller else { return }
-        let controller = PreviewInit.createViewController()
+        let controller = PreviewInit.createViewController(docName: docName)
         viewController.navigationController?.pushViewController(controller, animated: true)
     }
     

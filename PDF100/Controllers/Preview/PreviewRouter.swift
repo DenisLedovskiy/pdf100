@@ -3,7 +3,7 @@ import UIKit
 protocol PreviewRouterInterface: AnyObject {
     func dismiss()
     func showDelete(sheet: UIViewController)
-    func routeReorder()
+    func routeReorder(name: String)
 }
 
 class PreviewRouter: NSObject {
@@ -13,9 +13,9 @@ class PreviewRouter: NSObject {
 // MARK: - PreviewRouterInterface
 
 extension PreviewRouter: PreviewRouterInterface {
-    func routeReorder() {
+    func routeReorder(name: String) {
         guard let viewController = controller else { return }
-        let controller = ReorderVC()
+        let controller = ReorderVC(docName: name)
         viewController.navigationController?.pushViewController(controller, animated: true)
     }
     

@@ -6,7 +6,7 @@ final class DeleteSheet: BaseSheetViewController {
 
     private lazy var sheetView: UIView = {
         let view = UIView()
-        view.backgroundColor = .popWhite
+        view.backgroundColor = .white
         view.layer.cornerRadius = 12
         view.layer.maskedCorners = [.layerMaxXMinYCorner, .layerMinXMinYCorner]
         return view
@@ -36,7 +36,14 @@ final class DeleteSheet: BaseSheetViewController {
         label.numberOfLines = 2
         label.textAlignment = .center
         label.adjustsFontSizeToFitWidth = true
-        label.text = trans("Do you want to exit without saving  your changes?")
+        let text = trans("Do you want to exit without saving your changes?")
+
+        let attributedText = NSMutableAttributedString(string: text)
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineSpacing = 6
+        attributedText.addAttribute(.paragraphStyle, value: paragraphStyle, range: NSRange(location: 0, length: attributedText.length))
+        label.attributedText = attributedText
+        label.textAlignment = .center
         return label
     }()
 
@@ -53,7 +60,15 @@ final class DeleteSheet: BaseSheetViewController {
 
     private lazy var discardButton: PdfButton = {
         let button = PdfButton()
-        button.setTitle(trans("Discard"))
+        let normalAttributedString = NSAttributedString(
+            string: trans("Discard"),
+            attributes: [
+                NSAttributedString.Key.foregroundColor : UIColor.white,
+                NSAttributedString.Key.font : UIFont.hellix(.bold, size: 18)
+            ]
+        )
+        button.setAttributedTitle(normalAttributedString, for: .normal)
+        button.setAttributedTitle(normalAttributedString, for: .highlighted)
         button.addTarget(self, action: #selector(tapDeiscard), for: .touchUpInside)
 
         button.setCornerRadius(24)
@@ -74,6 +89,8 @@ final class DeleteSheet: BaseSheetViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         congifureConstraits()
+
+        view.backgroundColor = .white
     }
 
     //    MARK: - Ovverides
@@ -95,6 +112,7 @@ private extension DeleteSheet {
     }
 
     @objc func tapDeiscard() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
         close()
         didTap?()
     }
@@ -130,13 +148,13 @@ private extension DeleteSheet {
         })
 
         titleLabel.snp.makeConstraints({
-            $0.top.equalTo(bigImageView.snp.bottom).offset(8)
+            $0.top.equalTo(bigImageView.snp.bottom).offset(20)
             $0.trailing.equalToSuperview().inset(40)
             $0.leading.equalToSuperview().offset(40)
         })
 
         subTitleLabel.snp.makeConstraints({
-            $0.top.equalTo(titleLabel.snp.bottom).offset(8)
+            $0.top.equalTo(titleLabel.snp.bottom).offset(16)
             $0.trailing.equalToSuperview().inset(40)
             $0.leading.equalToSuperview().offset(40)
         })

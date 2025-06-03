@@ -32,14 +32,14 @@ final class BannerView: UIView {
         label.textAlignment = .natural
         label.adjustsFontSizeToFitWidth = true
         label.textColor = .white
-        label.font = .hellix(.bold, size: 20)
+        label.font = .hellix(.bold, size: phoneSize == .big ? 26 : 20)
         label.text = trans("PDF Editor Ultimate")
         return label
     }()
 
     private let subLabel: UILabel = {
         let label = UILabel()
-        label.numberOfLines = 1
+        label.numberOfLines = 2
         label.textAlignment = .natural
         label.adjustsFontSizeToFitWidth = true
         label.textColor = .white
@@ -61,6 +61,12 @@ final class BannerView: UIView {
         button.setAttributedTitle(normalAttributedString, for: .highlighted)
         button.backgroundColor = .textBlack
         button.layer.cornerRadius = 10
+
+        button.layer.shadowRadius = 4
+        button.layer.shadowOpacity = 1
+        button.layer.shadowColor = UIColor.black.withAlphaComponent(0.2).cgColor
+        button.layer.shadowOffset = CGSize(width: 0, height: 4)
+        button.clipsToBounds = false
         return button
     }()
 
@@ -106,6 +112,7 @@ final class BannerView: UIView {
 private extension BannerView {
 
     @objc func tapView() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
         didTap?()
     }
 
@@ -137,6 +144,10 @@ private extension BannerView {
             $0.width.equalTo(width + 30)
             $0.leading.equalTo(viewIcon.snp.trailing).offset(10)
             $0.bottom.equalToSuperview().inset(20)
+        })
+
+        viewButton.snp.makeConstraints({
+            $0.edges.equalToSuperview()
         })
     }
 }

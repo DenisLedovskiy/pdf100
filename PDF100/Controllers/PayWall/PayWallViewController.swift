@@ -15,7 +15,7 @@ final class PayWallViewController: PDF100ViewController {
     private var router: PayWallBRouterInterface?
 
     private var currentPlan: PayVariant = .noTrial
-    private let appHubManager = AppHudManager.shared
+    private let appHubManager = MakeDollarService.shared
 
     // MARK: - UI Propery
 
@@ -23,9 +23,9 @@ final class PayWallViewController: PDF100ViewController {
     private lazy var bottomFontSize: Double = isSmallPhone ? 12 : 14
 
     private var titleTopInset: Double = switch phoneSize {
-    case .small: isEnLocal ? 40 : 20
-    case .medium: isEnLocal ? 80 : 40
-    case .big: isEnLocal ? 100 : 60
+    case .small: 20
+    case .medium: 40
+    case .big: isEnLocal ? 80 : 60
     }
 
     private var imageHeight: Double = switch phoneSize {
@@ -37,12 +37,12 @@ final class PayWallViewController: PDF100ViewController {
     private var betweenPayInset: Double = switch phoneSize {
     case .small: 10
     case .medium: 16
-    case .big: 20
+    case .big: 16
     }
 
     private var bottomContinueButtonsInset: Double = switch phoneSize {
     case .small: 40
-    case .medium: 50
+    case .medium: 62
     case .big: 60
     }
 
@@ -65,7 +65,7 @@ final class PayWallViewController: PDF100ViewController {
     }
 
     private var imageTopInset: Double = switch phoneSize {
-    case .small: 15
+    case .small: 12
     case .medium: 25
     case .big: 35
     }
@@ -90,6 +90,10 @@ final class PayWallViewController: PDF100ViewController {
         let style2 = [NSAttributedString.Key.font : UIFont.hellix(.bold, size: 30),
                       NSAttributedString.Key.foregroundColor : UIColor.textRed]
 
+        var stirng = trans("Get started today with")
+        if isEnLocal {
+            stirng = trans("Get started today\n with")
+        }
         let attrStr1 = NSMutableAttributedString(string: trans("Get started today with") + ", ", attributes: style1)
         let attrStr2 = NSMutableAttributedString(string: trans("full access"), attributes: style2)
         attrStr1.append(attrStr2)
@@ -234,6 +238,12 @@ final class PayWallViewController: PDF100ViewController {
     }
 
     // MARK: - LifeCicle
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        hideTabBar(true)
+        hideNavBar(true)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         customInit()
@@ -260,7 +270,7 @@ private extension PayWallViewController {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
         switch currentPlan {
         case .noTrial:
-            guard let appHubModel = appHubManager.subscription else { return }
+            guard let appHubModel = appHubManager.subscriptionNoTrial else { return }
             startSpinner()
             appHubManager.startPurchase(appHubModel)
         case .trial:
@@ -320,15 +330,19 @@ private extension PayWallViewController {
         continueButton.setTitle(trans("Try for free"))
     }
 
-    //TODO: - Сделать заполнение из библиотеки
     func setPriceInViews() {
-        let priceYear = appHubManager.getPrice(.noTrial)
-        let durationYear = appHubManager.getDuration(.noTrial)
-        noTrialView.setTexts(title: "Yearly", priceDown: "$29,99/year", priceRight: "$2,99/week")
+        let priceNoTrial = appHubManager.getPrice(.noTrial)
+        let durationNoTrial = appHubManager.getDuration(.noTrial)
+        let perWeekPrice = appHubManager.getYearPerWeekPrice()
+        noTrialView.setTexts(title: trans("Yearly"),
+                             priceDown: "\(priceNoTrial)\(durationNoTrial)",
+                             priceRight: "\(perWeekPrice)\(trans("/week"))")
 
-        let priceWeek = appHubManager.getPrice(.trialWeek)
-        let durationWeek = appHubManager.getDuration(.trialWeek)
-        trialView.setTexts(title: "Weekly", priceDown: "3 days trial", priceRight: "$7,99/week")
+        let priceTrial = appHubManager.getPrice(.trial)
+        let durationTrial = appHubManager.getDuration(.trial)
+        trialView.setTexts(title: trans("Weekly"),
+                           priceDown: trans("3 days trial"),
+                           priceRight: "\(priceTrial)\(durationTrial)")
     }
 }
 
@@ -338,8 +352,8 @@ private extension PayWallViewController {
     func customInit() {
         setViewAndConstraits()
 
-        noTrialView.setSelect(isSelect: false)
-        trialView.setSelect(isSelect: true)
+        noTrialView.setSelect(isSelect: true)
+        trialView.setSelect(isSelect: false)
     }
 
     func setViewAndConstraits() {
@@ -450,13 +464,13 @@ private extension PayWallViewController {
 
         noTrialView.snp.makeConstraints({
             $0.top.equalTo(topImageView.snp.bottom)
-            $0.leading.trailing.equalToSuperview().inset(20)
+            $0.leading.trailing.equalToSuperview().inset(22)
             $0.height.equalTo(payViewHeight)
         })
 
         trialView.snp.makeConstraints({
             $0.top.equalTo(noTrialView.snp.bottom).offset(betweenPayInset)
-            $0.leading.trailing.equalToSuperview().inset(25)
+            $0.leading.trailing.equalToSuperview().inset(22)
             $0.height.equalTo(payViewHeight)
         })
 
@@ -475,7 +489,6 @@ private extension PayWallViewController {
 
 // MARK: - AppHubManagerDelegate
 
-//TODO: - доделать
 extension PayWallViewController: AppHudManagerDelegate {
     func finishLoadPaywall() {
 
@@ -486,6 +499,6 @@ extension PayWallViewController: AppHudManagerDelegate {
         guard let success = success else {
             return
         }
-//        success ? presenter?.selectClose() : showErrorAlert(title: translate("Sorry"), message: messageError)
+        success ? presenter?.selectClose() : showErrorAlert(title: trans("Sorry"), message: messageError)
     }
 }

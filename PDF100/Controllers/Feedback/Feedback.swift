@@ -56,17 +56,31 @@ final class Feedback: UIViewController {
     private let subLabel: UILabel = {
         let label = UILabel()
         label.numberOfLines = 2
-        label.textAlignment = .center
         label.adjustsFontSizeToFitWidth = true
         label.textColor = .subtitle
-        label.font = .hellix(.semibold, size: 16)
-        label.text = trans("We’d love to hear what you think about your experience with the app!")
+        label.font = .hellix(.semibold, size: 18)
+        let text = trans("We’d love to hear what you think about your experience with the app!")
+
+        let attributedText = NSMutableAttributedString(string: text)
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineSpacing = 4
+        attributedText.addAttribute(.paragraphStyle, value: paragraphStyle, range: NSRange(location: 0, length: attributedText.length))
+        label.attributedText = attributedText
+        label.textAlignment = .center
         return label
     }()
 
     private lazy var continueButton: PdfButton = {
         let button = PdfButton()
-        button.setTitle(trans("Write a feedback"))
+        let normalAttributedString = NSAttributedString(
+            string: trans("Write a feedback"),
+            attributes: [
+                NSAttributedString.Key.foregroundColor : UIColor.white,
+                NSAttributedString.Key.font : UIFont.hellix(.bold, size: 18)
+            ]
+        )
+        button.setAttributedTitle(normalAttributedString, for: .normal)
+        button.setAttributedTitle(normalAttributedString, for: .highlighted)
         button.addTarget(self, action: #selector(tapFeedback), for: .touchUpInside)
 
         button.setCornerRadius(24)
@@ -83,6 +97,7 @@ final class Feedback: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         customInit()
+        UserDefSettings.isShowedLikeIt = true
     }
 }
 
@@ -103,7 +118,6 @@ private extension Feedback {
         }
     }
 }
-
 
 //MARK: - Constraits and UI
 private extension Feedback {
@@ -154,7 +168,7 @@ private extension Feedback {
         })
         
         subLabel.snp.makeConstraints({
-            $0.top.equalTo(titleLabel.snp.bottom).offset(4)
+            $0.top.equalTo(titleLabel.snp.bottom).offset(10)
             $0.leading.trailing.equalToSuperview().inset(10)
         })
         

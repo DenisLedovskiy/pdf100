@@ -69,7 +69,7 @@ final class SettingsViewController: PDF100ViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        hideNavBar(false)
+        hideNavBar(true)
         hideTabBar(false)
     }
 
@@ -110,7 +110,8 @@ private extension SettingsViewController {
         let configuration = UICollectionViewCompositionalLayoutConfiguration()
 
         return UICollectionViewCompositionalLayout(sectionProvider: { [self] section, _ in
-            setTableLayout(size: SettingCell.size)
+            let smallSpace: CGFloat = isSmallPhone ? 10 : 15
+            return setTableLayout(size: SettingCell.size, interGroupSpace: phoneSize == .big ? 20 : smallSpace)
         }, configuration: configuration)
     }
 
@@ -157,13 +158,14 @@ private extension SettingsViewController {
     }
 
     func checkPremiunUI() {
-        if AppHudManager.shared.isPremium {
+        let appHudmanager = MakeDollarService.shared
+        if appHudmanager.isPremium {
             bannerView.snp.removeConstraints()
             bannerView.removeFromSuperview()
             view.addSubview(collectionView)
 
             collectionView.snp.remakeConstraints({
-                $0.top.equalTo(titleLabel.snp.bottom).offset(22)
+                $0.top.equalTo(titleLabel.snp.bottom).offset(isSmallPhone ? 10 : 22)
                 $0.leading.trailing.equalToSuperview()
                 $0.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
             })
@@ -171,13 +173,13 @@ private extension SettingsViewController {
             view.addSubview(bannerView)
             view.addSubview(collectionView)
             bannerView.snp.remakeConstraints({
-                $0.top.equalTo(titleLabel.snp.bottom).offset(22)
+                $0.top.equalTo(titleLabel.snp.bottom).offset(isSmallPhone ? 10 : 22)
                 $0.leading.trailing.equalToSuperview().inset(20)
                 $0.height.equalTo(140)
             })
 
             collectionView.snp.remakeConstraints({
-                $0.top.equalTo(titleLabel.snp.bottom).offset(183)
+                $0.top.equalTo(titleLabel.snp.bottom).offset(isSmallPhone ? 170 : 183)
                 $0.leading.trailing.equalToSuperview()
                 $0.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
             })
